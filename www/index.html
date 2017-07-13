@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="css/jquery.mobile.flatui.css" />
+  <script src="js/jquery.js"></script>
+  <script src="js/jquery.mobile-1.4.0-rc.1.js"></script>
+  <script src="cordova.js"></script>
+</head>
+<body>
+  <div data-role="page" id="login" data-theme="b">
+    <div data-role="header" data-position="fixed">
+      <h1>Login to MySwine</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <img src="img/logo.png" style="width:50%; margin-left:25%; display:block;">
+      <input required id="email" type="email" placeholder="Email" />
+      <input required id="password" type="password" placeholder="Password" />
+      <button id="loginBtn">Login</button>
+    </div>
+    <div data-role="footer" data-theme="a" data-position="fixed">
+      <h1>De La Salle Araneta University</h1>
+    </div>
+  </div>
+
+  <div data-role="page" id="dashboard" data-theme="b">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#mainpanel" data-role="button" data-icon="flat-menu"></a>
+      <h1>Dashboard</h1>
+    </div>
+    <div data-role="panel" data-theme="a" id="mainpanel" data-display="push">
+      <img src="img/logo.png" style="width:50%; margin-left:25%; display:block;" >
+      <span id="currentEmail"></span>
+      <div data-role="controlgroup">
+        <a href="#tasks" data-transition="flow" data class="ui-btn ui-corner-all ui-icon-calendar ui-btn-icon-left">Tasks</a>
+        <a href="#records" data-transition="flow" class="ui-btn ui-corner-all ui-icon-bullets ui-btn-icon-left">Records</a>
+        <a href="#settings" data-transition="flow" class="ui-btn ui-corner-all ui-icon-gear ui-btn-icon-left">Settings</a>
+        <a href="#" id="logout" class="ui-btn ui-corner-all ui-icon-lock ui-btn-icon-left">Logout</a>
+        <a href="#" id="quit" class="ui-btn ui-corner-all ui-icon-power ui-btn-d ui-btn-icon-left">Quit</a>
+      </div>
+    </div>
+    <div data-role="main" class="ui-content">
+      <h1>Dashboard</h1>
+      <p id="dashinfo"></p>
+    </div>
+    <div data-role="footer" data-theme="a" data-position="fixed">
+      <h1>De La Salle Araneta University</h1>
+    </div>
+  </div>
+
+  <div data-role="page" id="tasks" data-theme="b">
+    <div data-role="header">
+      <a data-iconpos="notext" href="#" data-rel="back" data-role="button" data-icon="back"></a>
+      <h1>Tasks</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <ul data-role="listview" data-inset="true" data-divider-theme="a">
+        <li data-role="list-divider">Current Tasks <span class="ui-li-count">1</span></li>
+        <li><a href="#">
+          <h1>Task Name</h1>
+          <span>[DateTime]</span> - <p>description</p>
+        </a></li>
+        <li data-role="list-divider">Finished Tasks <span class="ui-li-count">0</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div data-role="page" id="records" data-theme="b">
+    <div data-role="header">
+      <a data-iconpos="notext" href="#" data-rel="back" data-role="button" data-icon="back"></a>
+      <h1>Recprds</h1>
+    </div>
+  </div>
+
+  <div data-role="page" id="settings" data-theme="b">
+    <div data-role="header">
+      <a data-iconpos="notext" href="#" data-rel="back" data-role="button" data-icon="back"></a>
+      <h1>Settings</h1>
+    </div>
+  </div>
+
+
+
+  <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+  <script>// Initialize Firebase
+    var config = {
+      apiKey: "AIzaSyBUbmQEi-INbIEwFp6oN9baJM3fxxakBWE",
+      authDomain: "myswine-90d52.firebaseapp.com",
+      databaseURL: "https://myswine-90d52.firebaseio.com",
+      projectId: "myswine-90d52",
+      storageBucket: "myswine-90d52.appspot.com",
+      messagingSenderId: "628940624191"
+    };
+    firebase.initializeApp(config);
+  </script>
+  <script src="js/controller.js"></script>
+</body>
+</html>

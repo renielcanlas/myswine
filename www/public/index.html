@@ -1,0 +1,253 @@
+<html class="ui-mobile">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="css/jquery.mobile.flatui.css">
+  <script src="js/moment.js"></script>
+  <script src="js/jquery.js"></script>
+  <script src="js/jquery.mobile-1.4.0-rc.1.js"></script>
+  <script src="js/qrcode.min.js"></script>
+  <script src="js/html2canvas.js"></script>
+  <script src="js/moment.js"></script>
+  <script src="cordova.js"></script>
+  <title>Task Info Push</title>
+</head>
+
+<body>
+  <div data-role="page" id="login" data-theme="b">
+    <div data-role="header" data-position="fixed">
+      <h1>Login to MySwine</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <img src="img/logo.png" style="width:50%; margin-left:25%; display:block;">
+      <input required="" id="email" type="email" placeholder="Email">
+      <input required="" id="password" type="password" placeholder="Password">
+      <button id="loginBtn">Login</button>
+    </div>
+    <div data-role="footer" data-theme="a" data-position="fixed">
+      <h1>De La Salle Araneta University</h1>
+    </div>
+  </div>
+
+  <div data-role="page" id="dashboard" data-theme="b" data-url="dashboard">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#mainpanel" data-role="button" data-icon="flat-menu"></a>
+      <h1>Dashboard</h1>
+    </div>
+    <div data-role="panel" data-theme="a" id="mainpanel" data-display="push">
+      <img src="img/logo.png" style="width:50%; margin-left:25%; display:block;">
+      <span id="currentEmail"></span>
+      <div data-role="controlgroup">
+        <a href="#tasks" data-transition="flow" class="ui-btn ui-corner-all ui-icon-calendar ui-btn-icon-left">Tasks</a>
+        <a href="#records" data-transition="flow" class="ui-btn ui-corner-all ui-icon-bullets ui-btn-icon-left">Records</a>
+        <a href="#sales" data-transition="flow" class="adminonly ui-btn ui-corner-all ui-icon-tag ui-btn-icon-left">Sales</a>
+        <a href="#users" data-transition="flow" class="adminonly ui-btn ui-corner-all ui-icon-user ui-btn-icon-left">Users</a>
+        <a href="#logs" data-transition="flow" class="adminonly ui-btn ui-corner-all ui-icon-edit ui-btn-icon-left">Farm Logs</a>
+        <a href="#settings" data-transition="flow" class="ui-btn ui-corner-all ui-icon-gear ui-btn-icon-left">Settings</a>
+        <a href="#" id="logout" class="ui-btn ui-corner-all ui-icon-lock ui-btn-icon-left">Logout</a>
+        <a href="#" id="quit" class="ui-btn ui-corner-all ui-icon-power ui-btn-d ui-btn-icon-left">Quit</a>
+      </div>
+    </div>
+    <div data-role="main" class="ui-content">
+      <h1>Dashboard</h1>
+      <p id="dashinfo"></p>
+    </div>
+    <div data-role="footer" data-theme="a" data-position="fixed">
+      <h1>De La Salle Araneta University</h1>
+    </div>
+  </div>
+
+  <div data-role="page" id="tasks" data-theme="b" data-url="tasks">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#dashboard" data-role="button" data-icon="back"></a>
+      <h1>Tasks</h1>
+      <a class="adminonly" id="addTaskButton" data-iconpos="notext" href="#addtask" data-role="button" data-icon="plus"></a>
+    </div>
+    <div data-role="main" class="ui-content">
+
+      <div data-role="collapsible" data-theme="a" data-inset="false" data-collapsed="false">
+        <h3>Current Tasks<span class="ui-li-count" id="curCount">0</span></h3>
+        <ul id="currentTasks" data-role="listview" data-theme="c">
+          <!--<li>
+            <a href="#">
+              <h1>Canary</h1>
+              <p>[TimeStamp] - Description of task</p>
+            </a>
+          </li>-->
+        </ul>
+      </div>
+      <div data-role="collapsible" data-theme="a" data-inset="false" data-collapsed="true">
+        <h3>Finished Tasks<span class="ui-li-count" id="finCount">0</span></h3>
+        <ul id="finishedTasks" data-role="listview" data-theme="c"></ul>
+      </div>
+
+    </div>
+  </div>
+
+  <div data-role="page" id="records" data-theme="b" data-url="records">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#dashboard" data-role="button" data-icon="back"></a>
+      <h1>Records</h1>
+      <a id="addPigButton" class="adminonly" data-iconpos="notext" href="#addpig" data-role="button" data-icon="plus"></a>
+    </div>
+    <div data-role="main" class="ui-content">
+      <button id="qrsearch" data-theme="a">QR Search</button>
+      <ul id="piglist" data-role="listview" data-filter="true" data-filter-theme="b" data-filter-placeholder="Search..." data-theme="c">
+        <!--<li><a href='#'><h4>P100001</h4><p>[Male] 4-Months</p></a></li>-->
+      </ul>
+    </div>
+  </div>
+
+  <div data-role="page" id="settings" data-theme="b" data-url="settings">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#dashboard" data-role="button" data-icon="back"></a>
+      <h1>Settings</h1>
+    </div>
+  </div>
+
+  <div data-role="page" id="sales" data-theme="b" data-url="sales">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#dashboard" data-role="button" data-icon="back"></a>
+      <h1>Sales</h1>
+    </div>
+  </div>
+
+  <div data-role="page" id="logs" data-theme="b" data-url="logs">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#dashboard" data-role="button" data-icon="back"></a>
+      <h1>Logs</h1>
+      <a id="refreshlogs" data-iconpos="notext" href="#" data-role="button" data-icon="refresh"></a>
+    </div>
+    <div data-role="main" class="ui-content">
+        <div id="loglist"></div>
+    </div>
+  </div>
+
+  <div data-role="page" id="users" data-theme="b" data-url="users">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#dashboard" data-role="button" data-icon="back"></a>
+      <h1>Users</h1>
+      <a id="addUserButton" data-iconpos="notext" href="#adduser" data-role="button" data-icon="plus"></a>
+    </div>
+    <div data-role="main" class="ui-content">
+      <ul id="userlist" data-role="listview" data-theme="c" data-filter="true" data-filter-theme="b" data-filter-placeholder="Search User"></ul>
+    </div>
+  </div>
+
+  <div data-role="page" id="addtask" data-theme="b" data-url="addtask">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#tasks" data-role="button" data-icon="back"></a>
+      <h1>Add Task</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <form class="ui-filterable">
+        &nbsp;&nbsp;&nbsp;&nbsp;<input id="taskname" data-type="search" placeholder="Task Name">
+      </form>
+      <ul data-role="listview" data-filter-reveal="true" id="tasknames" data-filter="true" data-inset="true" data-input="#taskname"></ul>
+      <input id="taskdesc" data-type="text" placeholder="Task Description">
+      <select id="taskassigned" data-theme="c">
+        <option value="">Assigned To</option>
+      </select>
+      <button id="savetask">Save Task Info</button>
+    </div>
+  </div>
+
+  <div data-role="page" id="adduser" data-theme="b" data-url="adduser">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#users" data-role="button" data-icon="back"></a>
+      <h1>Add User</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <input id="addusername" type="text" placeholder="Fullname">
+      <input id="adduseremail" type="email" placeholder="email@myswine.com">
+      <input id="adduserpassword" type="password" placeholder="Password">
+      <input id="adduserconfirm" type="password" placeholder="Confirm Password">
+      <button id="saveuser">Save User Info</button>
+    </div>
+  </div>
+
+  <div data-role="page" id="addpig" data-theme="b">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#records" data-role="button" data-icon="back"></a>
+      <h1>Add Record</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <input id="addpigname" type="text" placeholder="Pig Name">
+      <select data-theme="c" id="addpiggender">
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+      <input id="addpigbdate" type="date">
+      <button id="savepig">Save Record</button>
+    </div>
+  </div>
+
+  <div data-role="page" id="editpig" data-theme="b">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#records" data-role="button" data-icon="back"></a>
+      <h1>Edit Record</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <div id="qrgenerated1" style="border:2px solid black; padding:10px; margin:10px; height:200px; width:200px;"></div>
+      <input type="hidden" id="editpigkey">
+      <input id="editpigname" type="text" placeholder="Pig Name">
+      <select data-theme="c" id="editpiggender">
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+      <input id="editpigbdate" type="date">
+      <button id="pigedit">Save Record</button>
+      <button id="deletepig">Sell</button>
+      <button data-theme="d" id="deletepig">Delete Record</button>
+    </div>
+  </div>
+
+  <div data-role="page" id="userinfo" data-theme="b" data-url="userinfo">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#users" data-role="button" data-icon="back"></a>
+      <h1>Add User</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <input type="hidden" id="edituserid">
+      <input id="editusername" readonly="" type="text" placeholder="Fullname">
+      <input id="edituseremail" readonly="" type="email" placeholder="email@myswine.com">
+      <button data-theme="d" id="deleteuser">Delete</button>
+      <a href="https://myswine-90d52.firebaseio.com/" target="_blank" class="ui-btn ui-btn-a">Open Firebase Console</a>
+    </div>
+  </div>
+
+  <div data-role="page" id="push" data-theme="b" data-url="push">
+    <div data-role="header" role="banner" class="ui-header ui-bar-inherit">
+      <h1 class="ui-title" role="heading" aria-level="1">Task Info Push</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <div class="ui-input-text ui-body-inherit ui-corner-all ui-shadow-inset"><input id="pushtask" type="text" placeholder="Task Name"></div>
+      <div class="ui-input-text ui-body-inherit ui-corner-all ui-shadow-inset"><input id="pushdesc" type="text" placeholder="Description"></div>
+      <button id="taskpush" class=" ui-btn ui-shadow ui-corner-all">Push</button>
+    </div>
+  </div>
+
+
+  <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+  <script>
+    // Initialize Firebase
+    var config = {
+      apiKey: "AIzaSyBUbmQEi-INbIEwFp6oN9baJM3fxxakBWE",
+      authDomain: "myswine-90d52.firebaseapp.com",
+      databaseURL: "https://myswine-90d52.firebaseio.com",
+      projectId: "myswine-90d52",
+      storageBucket: "myswine-90d52.appspot.com",
+      messagingSenderId: "628940624191"
+    };
+    firebase.initializeApp(config);
+  </script>
+  <script src="js/controller.js"></script>
+
+
+  <div class="ui-loader ui-corner-all ui-body-a ui-loader-default"><span class="ui-icon-loading"></span>
+    <h1>loading</h1>
+  </div>
+</body>
+
+</html>

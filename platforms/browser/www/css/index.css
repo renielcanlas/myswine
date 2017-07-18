@@ -111,26 +111,26 @@ h1 {
     -webkit-animation:fade 3000ms infinite;
 }
 
-#salestable{
+table{
     width:100%;
     border-collapse: collapse;
 }
 
-#salestable thead{
+table thead{
     background:#ccc;
 }
 
-#salestable th, #salestable td{
+table th, table td{
     padding:5px;
     border:1px solid #ccc;
 }
 
-#salestable th{
+table th{
     font-weight: bold;
     text-align: center;
     border:2px solid black;
 }
 
-#salestable td.num{
+table td.num{
     text-align: right;
 }

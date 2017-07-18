@@ -5,8 +5,16 @@ var db;
 var uid; //user id
 var auth;
 var curname;
+var fuser;
 
 document.addEventListener("deviceready", function () {
+
+
+    //*********************************//
+    //EVENT HANDLERS
+    //*********************************//
+
+    
 
     document.addEventListener("backbutton", function (e) {
         e.preventDefault();
@@ -16,9 +24,30 @@ document.addEventListener("deviceready", function () {
     auth = firebase.auth();
     console.log(db);
 
-    //*********************************//
-    //EVENT HANDLERS
-    //*********************************//
+    //keep me logged in
+    firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+        // User is signed in.
+        fuser = user;
+        uid = user.uid;
+        $.mobile.navigate("#dashboard");
+        loadTaskNames();
+        loadTasks();
+        if (uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") {
+            $(".adminonly").show();
+            curname = "Administrator";
+        } else {
+            $(".adminonly").hide();
+            refe.orderByChild("uid").equalTo(uid).on("child_added", function (dat) {
+            curname = dat.val().name;
+        });
+        }
+        $.mobile.loading("hide");
+        $("#currentEmail").html(curname);
+        $("#curuser").html(curname);
+        saveLog("User Login: " + curname)
+    }
+    });
 
     //show dashboard panel
     $(document).on("swiperight", "#dashboard", function (e) {
@@ -61,25 +90,33 @@ document.addEventListener("deviceready", function () {
         var email = $("#email").val();
         var password = $("#password").val();
         var refe = db.ref("users");
+        curname="";
         firebase.auth().signOut();
         firebase.auth().signInWithEmailAndPassword(email, password).then(function (user) {
             console.log(firebase.auth().currentUser.email);
-            
-            $.mobile.navigate("#dashboard");
             uid = firebase.auth().currentUser.uid;
             loadTaskNames();
             loadTasks();
             if (firebase.auth().currentUser.uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") {
                 $(".adminonly").show();
                 curname = "Administrator";
+                $("#currentEmail").html(curname);
+                $("#curuser").html(curname);
+                $.mobile.navigate("#dashboard");
             } else {
                 $(".adminonly").hide();
                 refe.orderByChild("uid").equalTo(uid).on("child_added", function (dat) {
                 curname = dat.val().name;
+                if(curname==""){
+                    alert("Invalid User");
+                }
+                else{
+                    $("#currentEmail").html(curname);
+                    $("#curuser").html(curname);
+                }
             });
             }
             $.mobile.loading("hide");
-            $("#currentEmail").html(curname);
             saveLog("User Login: " + curname)
         }).catch(function (error) {
             // Handle Errors here.
@@ -88,6 +125,35 @@ document.addEventListener("deviceready", function () {
             alert(errorMessage);
             $.mobile.loading("hide");
         });
+    });
+
+    $("#taskedit").click(function(){
+        var key = $("#edittasknamekey").val();
+        var task = $("#editpushtask").val();
+        var desc = $("#editpushdesc").val();
+        var ref = db.ref("tasknames/" + key);
+        ref.update({
+            task: task,
+            desc: desc
+        }).then(function () {
+            console.log("PUSH");
+            $("#pushtask").val("");
+            $("#pushdesc").val("");
+            alert("Record Saved!");
+            $.mobile.navigate("#tasknames");
+            loadTaskNames();
+        });
+    });
+
+    $("#taskdelete").click(function(){
+        if(confirm("Are you sure?")){
+            var key = $("#edittasknamekey").val();
+            db.ref("tasknames/" + key).remove().then(function(){
+                alert("Task name deleted!");
+                $.mobile.navigate("#tasknames");
+                loadTaskNames();
+            });
+        }
     });
 
     $("#taskpush").click(function () {
@@ -101,6 +167,9 @@ document.addEventListener("deviceready", function () {
             console.log("PUSH");
             $("#pushtask").val("");
             $("#pushdesc").val("");
+            alert("Record Saved!");
+            $.mobile.navigate("#tasknames");
+            loadTaskNames();
         });
     });
 
@@ -143,10 +212,39 @@ document.addEventListener("deviceready", function () {
 
     $(document).on("pagebeforeshow", "#addtask", function () {
         loadUserList();
+        loadTaskNames();
     });
 
     $(document).on("pagebeforeshow", "#records", function () {
         loadHerd();
+    });
+
+    $(document).on("pagebeforeshow", "#growthrecord", function () {
+        loadGrowth();
+    });
+
+    $(document).on("pagebeforeshow", "#pighistory", function () {
+        loadHistory();
+    });
+
+    $(document).on("pagebeforeshow", "#expenses", function () {
+        loadExpenses();
+    });
+
+    $(document).on("pagebeforeshow", "#tasknames", function () {
+        loadTaskNames();
+    });
+
+    $(document).on("pagebeforeshow", "#editpig", function () {
+        if (firebase.auth().currentUser.uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") {
+            $("#editpigname").removeAttr("disabled");
+            $("#editpiggender").removeAttr("disabled");
+            $("#editpigbdate").removeAttr("disabled");
+        }else{
+            $("#editpigname").attr("disabled","disabled");
+            $("#editpiggender").attr("disabled","disabled");
+            $("#editpigbdate").attr("disabled","disabled");
+        }
     });
 
     $(document).on("pagebeforeshow", "#logs", function () {
@@ -159,8 +257,8 @@ document.addEventListener("deviceready", function () {
 
     $("#qrgenerated1").on("taphold",function(){
         var img = $("#qrgenerated1");
-        img.height(210);
-        img.append($("#editpigkey").val());
+        img.height(225);
+        img.append($("#editpigkey").val() + "<br>" + $("#editpigname").val());
         html2canvas(img,{
             onrendered:function(canvas){
                 window.canvas2ImagePlugin.saveImageDataToLibrary(
@@ -333,6 +431,52 @@ document.addEventListener("deviceready", function () {
         });
     });
 
+    $("#growth").click(function(){
+        var pigkey = $("#editpigkey").val();
+        $("#growthkey").val(pigkey);
+        $("#growthname").val($("#editpigname").val());
+        $("#addgrowthname").val($("#editpigname").val());
+        $.mobile.navigate("#growthrecord");
+    });
+
+    $("#addgrowthrecord").click(function(){
+        var pigkey = $("#growthkey").val();
+        var pigdate = $("#growthdate").val();
+        var pigweight = $("#growthweight").val();
+        var pigref = db.ref("herd/" + pigkey + "/growth").push({
+            date: pigdate,
+            weight: pigweight
+        }).then(function(){
+            alert("Growth record saved!");
+            loadGrowth();
+            $.mobile.navigate("#growthrecord");
+        });
+    });
+
+    $("#viewpighistory").click(function(){
+        var pigkey = $("#editpigkey").val();
+        $("#hiskey").val(pigkey);
+        $("#historykey").val(pigkey);
+        $("#hisname").val($("#editpigname").val());
+        $("#historyname").val($("#editpigname").val());
+        $.mobile.navigate("#pighistory");
+    });
+
+    $("#addhistoryrecord").click(function(){
+        var pigkey = $("#historykey").val();
+        var pigdate = $("#historydate").val();
+        var pigdesc = $("#historydesc").val();
+        var pigref = db.ref("herd/" + pigkey + "/history").push({
+            date: pigdate,
+            desc: pigdesc
+        }).then(function(){
+            alert("Information history record saved!");
+            loadHistory();
+            $.mobile.navigate("#pighistory");
+            $("#historydesc").val("");
+        });
+    });
+
     $("#deleteuser").click(function () {
         if (confirm("Are you sure?")) {
             var uid = $("#edituserid").val();
@@ -341,10 +485,9 @@ document.addEventListener("deviceready", function () {
             userref.orderByChild("uid").equalTo(uid).on("child_added", function (snap) {
                 key = snap.key;
                 db.ref("users/" + key).remove().then(function () {
-                    alert("Deleting user account must be done on Firebase Authentication Module");
+                    alert("User Deleted!");
                     $.mobile.navigate("#users");
                     saveLog("Deleted User with ID: " + uid);
-                    window.open("https://myswine-90d52.firebaseio.com/")
                 });
             });
         }
@@ -357,6 +500,25 @@ document.addEventListener("deviceready", function () {
         var assigned = $("#taskassigned").find("option:selected").html();
         addFireTask(taskname, taskdesc, taskassigned);
         saveLog("Created task for " + assigned + " to do " + taskname);
+    });
+
+    $("#addexpenserecord").click(function(){
+        var expdate = $("#expensedate").val();
+        var expcat = $("#expensecategory").val();
+        var expdesc = $("#expensedesc").val();
+        var expamt = $("#expenseamount").val();
+        var expense = db.ref("expenses").push({
+            date: expdate,
+            category: expcat,
+            desc: expdesc,
+            amount: expamt
+        }).then(function(){
+            alert("Expenses history record saved!");
+            loadExpenses();
+            $.mobile.navigate("#expenses");
+            $("#expensedesc").val("");
+            $("#expenseamount").val("");
+        });
     });
 
 
@@ -443,8 +605,28 @@ function loadAdminTasks() {
 
 function loadTaskNames() {
     var tasknameref = db.ref("tasknames");
+    $("#tasknames").html("");
+    $("#tasklist").html("");
     tasknameref.orderByChild("task").on("child_added", function (data) {
-        $("#tasknames").append("<li><a href='#' data-desc='" + data.val().desc + "'>" + data.val().task + "</a></li>").listview("refresh");
+        $("#tasknames").append("<li><a href='#' data-desc='" + data.val().desc + "'>" + data.val().task + "</a></li>");
+        $("#tasklist").append("<li><a href='#edittaskname' data-key='" + data.key + "'><h4>" + data.val().task + "</h4><p>" + data.val().desc + "</p></a></li>");
+        
+        $("#tasklist li").each(function () {
+            $(this).click(function () {
+                var key = $(this).find("a").attr("data-key");
+                var task = $(this).find("a").find("h4").html();
+                var desc = $(this).find("a").find("p").html();
+                $("#edittasknamekey").val(key);
+                $("#editpushtask").val(task);
+                $("#editpushdesc").val(desc);
+            });
+        });
+
+        try {
+            $("#tasklist").listview("refresh");
+        } catch (error) {
+            
+        }
     });
 }
 
@@ -598,6 +780,81 @@ function loadSales(){
         $("#salestable").prepend("<tr><td>" + data.val().transdate + "</td><td>" + data.val().name + "</td><td class='num'>" + data.val().price + "</td></tr>");
         totalsales = totalsales + parseFloat(data.val().price);
         $("#totalsales").html("Total Sales: " + totalsales);
+    });
+}
+
+function loadGrowth(){
+    $("#growthtable").find("tbody").html("");
+    $(".highcharts-root").parent().remove();
+    $('#growthtable').highchartTable();
+    var pigkey = $("#growthkey").val();
+    var growthref = db.ref("herd/" + pigkey + "/growth");
+    growthref.orderByChild("date").on("child_added", function (data) {
+        $("#growthtable").append("<tr><td>" + data.val().date + "</td><td class='num'>" + data.val().weight + "</td></tr>");
+        $(".highcharts-root").parent().remove();
+        $('#growthtable').highchartTable();
+    });
+}
+
+function loadHistory(){
+    $("#historytable").find("tbody").html("");
+    var pigkey = $("#historykey").val();
+    var historyref = db.ref("herd/" + pigkey + "/history");
+    historyref.orderByChild("date").on("child_added", function (data) {
+        $("#historytable").append("<tr><td>" + data.val().date + "</td><td>" + data.val().desc + "</td></tr>");
+    });
+}
+
+function loadExpenses(){
+    $("#expensestable").find("tbody").html("");
+    $("#expensetable2").find("tbody").html("");
+    $(".highcharts-root").parent().remove();
+    $('#expensestable').highchartTable();
+
+    var foods=0;
+    var meds=0;
+    var supplies=0;
+    var utils=0;
+    var salaries=0;
+    var others=0;
+    var total=0;
+
+    var growthref = db.ref("expenses");
+    growthref.orderByChild("date").on("child_added", function (data) {
+        $("#expensetable2").find("tbody").append("<tr><td>" + data.val().date + "</td><td>" + data.val().category + "</td><td>" + data.val().desc + "</td><td class='num'>" + data.val().amount + "</td></tr>");
+
+        switch(data.val().category){
+            case "Foods":
+            foods = foods + parseFloat(data.val().amount);
+            break;
+
+            case "Medicines":
+            meds = meds + parseFloat(data.val().amount);
+            break;
+
+            case "Supplies":
+            supplies = supplies + parseFloat(data.val().amount);
+            break;
+
+            case "Utilities":
+            utils = utils + parseFloat(data.val().amount);
+            break;
+
+            case "Salaries":
+            salaries = salaries + parseFloat(data.val().amount);
+            break;
+
+            case "Others":
+            others = others + parseFloat(data.val().amount);
+            break;
+        }
+
+        total=total + parseFloat(data.val().amount);
+
+        $("#expensestable").find("tbody").html("<tr><td style='background:#4572a7;'>Foods</td><td data-graph-item-color=''#ccc'>" + foods + "</td></tr><tr><td style='background:#aa4643;'>Medicines/Vaccines</td><td>" + meds + "</td></tr><tr><td style='background:#89a54e;'>Supplies</td><td>" + supplies + "</td></tr><tr><td style='background:#80699b;'>Utilities</td><td>" + utils + "</td></tr><tr><td style='background:#3d96ae;'>Salaries</td><td>" + salaries + "</td></tr><tr><td style='background:#db843d;'>Others</td><td>" + others + "</td></tr>");
+        $(".highcharts-root").parent().remove();
+        $('#expensestable').highchartTable();
+        $("#totalexpenses").html("Total Expenses: " + total);
     });
 }
 

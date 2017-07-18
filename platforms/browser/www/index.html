@@ -10,6 +10,8 @@
   <script src="js/jquery.mobile-1.4.0-rc.1.js"></script>
   <script src="js/qrcode.min.js"></script>
   <script src="js/html2canvas.js"></script>
+  <script src="https://code.highcharts.com/highcharts.src.js"></script>
+  <script src="js/chart.js"></script>
   <script src="js/moment.js"></script>
   <script src="cordova.js"></script>
   <title>Task Info Push</title>
@@ -43,6 +45,7 @@
         <a href="#tasks" data-transition="flow" class="ui-btn ui-corner-all ui-icon-calendar ui-btn-icon-left">Tasks</a>
         <a href="#records" data-transition="flow" class="ui-btn ui-corner-all ui-icon-bullets ui-btn-icon-left">Records</a>
         <a href="#sales" data-transition="flow" class="adminonly ui-btn ui-corner-all ui-icon-tag ui-btn-icon-left">Sales</a>
+        <a href="#expenses" data-transition="flow" class="adminonly ui-btn ui-corner-all ui-icon-shop ui-btn-icon-left">Expenses</a>
         <a href="#users" data-transition="flow" class="adminonly ui-btn ui-corner-all ui-icon-user ui-btn-icon-left">Users</a>
         <a href="#logs" data-transition="flow" class="adminonly ui-btn ui-corner-all ui-icon-edit ui-btn-icon-left">Farm Logs</a>
         <a href="#settings" data-transition="flow" class="ui-btn ui-corner-all ui-icon-gear ui-btn-icon-left">Settings</a>
@@ -51,8 +54,12 @@
       </div>
     </div>
     <div data-role="main" class="ui-content">
-      <h1>Dashboard</h1>
-      <p id="dashinfo"></p>
+      <h1>MySwine v 3.2</h1>
+      <img src="img/logo.png" style="width:50%; margin-left:25%; display:block;">
+      <h4>Welcome <span id="curuser"></span>
+      <p id="dashinfo">
+        If this is your first time use, you can refer to the <a target="_blank" href="https://drive.google.com/file/d/0B54DGfHc-o0zMjVKQnJpSVRlbUE/view?usp=sharing">User's Manual</a>
+      </p>
     </div>
     <div data-role="footer" data-theme="a" data-position="fixed">
       <h1>De La Salle Araneta University</h1>
@@ -91,9 +98,9 @@
       <a data-iconpos="notext" href="#dashboard" data-role="button" data-icon="back"></a>
       <h1>Records</h1>
       <a id="addPigButton" class="adminonly" data-iconpos="notext" href="#addpig" data-role="button" data-icon="plus"></a>
-    </div>
-    <div data-role="main" class="ui-content">
       <button id="qrsearch" data-theme="a">QR Search</button>
+    </div>
+    <div data-role="main" class="ui-content" style="padding-top: 30px;">
       <ul id="piglist" data-role="listview" data-filter="true" data-filter-theme="b" data-filter-placeholder="Search..." data-theme="c">
         <!--<li><a href='#'><h4>P100001</h4><p>[Male] 4-Months</p></a></li>-->
       </ul>
@@ -104,6 +111,50 @@
     <div data-role="header" data-position="fixed">
       <a data-iconpos="notext" href="#dashboard" data-role="button" data-icon="back"></a>
       <h1>Settings</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <h1>MySwine v3.2</h1>
+      <a data-icon="action" href="#tasknames" class="adminonly ui-btn ui-btn-a">Task Names</a>
+      <a data-icon="action" href="https://myswine-90d52.firebaseio.com/" target="_blank" class="adminonly ui-btn ui-btn-a">Open Firebase Console</a>
+      <a data-icon="info" href="https://drive.google.com/file/d/0B54DGfHc-o0zMjVKQnJpSVRlbUE/view?usp=sharing" target="_blank" class="ui-btn ui-btn-a">Open Users Manual</a>
+      <a data-icon="user" href="#developers" class="ui-btn ui-btn-a">Developer's Info</a>
+    </div>
+    <div data-role="footer" data-theme="a" data-position="fixed">
+      <h1>De La Salle Araneta University</h1>
+    </div>
+  </div>
+
+  <div data-role="page" id="developers" data-theme="b">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#settings" data-role="button" data-icon="back"></a>
+      <h1>Developers</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <ul data-role="listview" data-split-icon="gear" data-split-theme="a" data-inset="true">
+        <li><a href="https://web.facebook.com/ruebencaberto" target="_blank">
+          <img src="img/caberto.jpg">
+          <h2>Rueben Caberto</h2>
+          <p>https://web.facebook.com/ruebencaberto</p>
+        </a></li>
+        <li><a href="https://web.facebook.com/bhermae47" target="_blank">
+          <img src="img/rillera.jpg">
+          <h2>Bhermae Rillera</h2>
+          <p>https://web.facebook.com/bhermae47</p>
+        </a></li>
+        <li><a href="https://web.facebook.com/jpsrdna027" target="_blank">
+          <img src="img/serdena.jpg">
+          <h2>Jollan Serdeña</h2>
+          <p>https://web.facebook.com/jpsrdna027</p>
+        </a></li>
+        <li><a href="https://web.facebook.com/marc.tabuzo" target="_blank">
+          <img src="img/tabuzo.jpg">
+          <h2>Marc Tabuzo</h2>
+          <p>https://web.facebook.com/marc.tabuzo</p>
+        </a></li>
+      </ul>
+    </div>
+    <div data-role="footer" data-theme="a" data-position="fixed">
+      <h1>De La Salle Araneta University</h1>
     </div>
   </div>
 
@@ -124,6 +175,48 @@
     </div>
     <div data-role="footer" data-theme="a" data-position="fixed">
       <h1 id="totalsales"></h1>
+    </div>
+  </div>
+
+  <div data-role="page" id="expenses" data-theme="b">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#dashboard" data-role="button" data-icon="back"></a>
+      <h1>Expenses</h1>
+      <a data-iconpos="notext" href="#addexpenses" data-role="button" data-icon="plus"></a>
+    </div>
+    <div data-role="main" class="ui-content">
+        <div data-role="tabs">
+          <div data-role="navbar">
+          <ul>
+            <li><a href="#one">Expenses Breakdown</a></li>
+            <li><a href="#two">Expenses History</a></li>
+          </ul>
+          </div>
+          <div id="one">
+            <table id="expensestable" class="highchart" data-graph-container-before="1" data-graph-type="pie">
+              <thead>
+                <th>Category</th>
+                <th>Amount (Php)</th>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div id="two">
+            <table id="expensetable2">
+              <thead>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Amount (Php)</th>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+    </div>
+    <div data-role="footer" data-theme="a" data-position="fixed">
+      <h1 id="totalexpenses"></h1>
     </div>
   </div>
 
@@ -211,34 +304,147 @@
         <option value="Female">Female</option>
       </select>
       <input id="editpigbdate" type="date">
-      <button id="pigedit">Save Record</button>
-      <button id="sellpig">Sell</button>
-      <button data-theme="d" id="deletepig">Delete Record</button>
+      <button class="adminonly" id="pigedit">Save Record</button>
+      <button id="viewpighistory">Information History</button>
+      <button class="adminonly" id="sellpig">Sell</button>
+      <button id="growth">Growth Record</button>
+      <button class="adminonly" data-theme="d" id="deletepig">Delete Record</button>
+    </div>
+  </div>
+
+  <div data-role="page" id="pighistory" data-theme="b">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#editpig" data-role="button" data-icon="back"></a>
+      <h1>Information History</h1>
+      <a data-iconpos="notext" href="#addhistory" data-role="button" data-icon="plus"></a>
+    </div>
+    <div data-role="main" class="ui-content">
+      <input type="hidden" id="hiskey">
+      <input type="text" disabled id="hisname">
+      <table id="historytable">
+          <thead>
+            <th>Date</th>
+            <th>Description</th>
+          </thead>
+          <tbody></tbody>
+        </table>
+    </div>
+  </div>
+
+  <div data-role="page" id="addhistory" data-theme="b">
+    <div data-role="header" role="banner" class="ui-header ui-bar-inherit">
+      <a data-iconpos="notext" href="#pighistory" data-role="button" data-icon="back"></a>
+      <h1 class="ui-title" role="heading" aria-level="1">Add Information History</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <input type="hidden" id="historykey">
+      <input type="text" disabled id="historyname">
+      <input type="date" id="historydate">
+      <input type="text" placeholder="Description" id="historydesc">
+      <button id="addhistoryrecord">Add Record</button>
+    </div>
+  </div>
+
+  <div data-role="page" id="growthrecord" data-theme="b">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#editpig" data-role="button" data-icon="back"></a>
+      <h1>Growth Record</h1>
+      <a data-iconpos="notext" href="#addgrowth" data-role="button" data-icon="plus"></a>
+    </div>
+    <div data-role="main" class="ui-content">
+      <input type="hidden" id="growthkey">
+      <input type="text" disabled id="growthname">
+      <table id="growthtable" class="highchart" data-graph-container-before="1" data-graph-type="line">
+          <thead>
+            <th>Date</th>
+            <th>Weight</th>
+          </thead>
+          <tbody></tbody>
+        </table>
+    </div>
+  </div>
+
+  <div data-role="page" id="addgrowth" data-theme="b">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#growthrecord" data-role="button" data-icon="back"></a>
+      <h1>Add Growth Record</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <input type="text" disabled id="addgrowthname">
+      <input type="date" id="growthdate">
+      <input type="number" value="0" step="0.01" id="growthweight">
+      <button id="addgrowthrecord">Add Record</button>
     </div>
   </div>
 
   <div data-role="page" id="userinfo" data-theme="b" data-url="userinfo">
     <div data-role="header" data-position="fixed">
       <a data-iconpos="notext" href="#users" data-role="button" data-icon="back"></a>
-      <h1>Add User</h1>
+      <h1>User Information</h1>
     </div>
     <div data-role="main" class="ui-content">
       <input type="hidden" id="edituserid">
       <input id="editusername" readonly="" type="text" placeholder="Fullname">
       <input id="edituseremail" readonly="" type="email" placeholder="email@myswine.com">
       <button data-theme="d" id="deleteuser">Delete</button>
-      <a href="https://myswine-90d52.firebaseio.com/" target="_blank" class="ui-btn ui-btn-a">Open Firebase Console</a>
+    </div>
+  </div>
+
+  <div data-role="page" id="tasknames" data-theme="b" data-url="push">
+    <div data-role="header" role="banner" class="ui-header ui-bar-inherit">
+      <a data-iconpos="notext" href="#settings" data-role="button" data-icon="back"></a>
+      <h1 class="ui-title" role="heading" aria-level="1">Task Info Push</h1>
+      <a data-iconpos="notext" href="#push" data-role="button" data-icon="plus"></a>
+    </div>
+    <div data-role="main" class="ui-content">
+      <ul id="tasklist" data-role="listview" data-theme="c"></ul>
+    </div>
+  </div>
+
+  <div data-role="page" id="edittaskname" data-theme="b" data-url="push">
+    <div data-role="header" role="banner" class="ui-header ui-bar-inherit">
+      <a data-iconpos="notext" href="#tasknames" data-role="button" data-icon="back"></a>
+      <h1 class="ui-title" role="heading" aria-level="1">Task Info Push</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <input type="hidden" id="edittasknamekey">
+      <div class="ui-input-text ui-body-inherit ui-corner-all ui-shadow-inset"><input id="editpushtask" type="text" placeholder="Task Name"></div>
+      <div class="ui-input-text ui-body-inherit ui-corner-all ui-shadow-inset"><input id="editpushdesc" type="text" placeholder="Description"></div>
+      <button id="taskedit" class=" ui-btn ui-shadow ui-corner-all">Edit Task</button>
+      <button id="taskdelete" class=" ui-btn ui-shadow ui-corner-all ui-btn-d">Delete Task</button>
     </div>
   </div>
 
   <div data-role="page" id="push" data-theme="b" data-url="push">
     <div data-role="header" role="banner" class="ui-header ui-bar-inherit">
+      <a data-iconpos="notext" href="#tasknames" data-role="button" data-icon="back"></a>
       <h1 class="ui-title" role="heading" aria-level="1">Task Info Push</h1>
     </div>
     <div data-role="main" class="ui-content">
       <div class="ui-input-text ui-body-inherit ui-corner-all ui-shadow-inset"><input id="pushtask" type="text" placeholder="Task Name"></div>
       <div class="ui-input-text ui-body-inherit ui-corner-all ui-shadow-inset"><input id="pushdesc" type="text" placeholder="Description"></div>
-      <button id="taskpush" class=" ui-btn ui-shadow ui-corner-all">Push</button>
+      <button id="taskpush" class=" ui-btn ui-shadow ui-corner-all">Save Task</button>
+    </div>
+  </div>
+
+  <div data-role="page" id="addexpenses" data-theme="b">
+    <div data-role="header" role="banner" class="ui-header ui-bar-inherit">
+      <a data-iconpos="notext" href="#expenses" data-role="button" data-icon="back"></a>
+      <h1 class="ui-title" role="heading" aria-level="1">Add Expenses</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <input type="date" id="expensedate">
+      <select data-theme="c" id="expensecategory">
+        <option value="Foods">Foods</option>
+        <option value="Medicines">Medicines/Vaccines</option>
+        <option value="Supplies">Supplies</option>
+        <option value="Utilities">Utilities</option>
+        <option value="Salaries">Salaries</option>
+        <option value="Others">Others</option>
+      </select>
+      <input type="text" id="expensedesc" placeholder="Description" >
+      <input type="number" step="0.01" id="expenseamount">
+      <button id="addexpenserecord">Add Record</button>
     </div>
   </div>
 

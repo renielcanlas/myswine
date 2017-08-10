@@ -31,8 +31,6 @@ document.addEventListener("deviceready", function () {
         fuser = user;
         uid = user.uid;
         $.mobile.navigate("#dashboard");
-        loadTaskNames();
-        loadTasks();
         if (uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") {
             $(".adminonly").show();
             curname = "Administrator";
@@ -84,6 +82,57 @@ document.addEventListener("deviceready", function () {
     //*********************************//
     //INTERACTIONS
     //*********************************//
+
+    $(document).on("pagebeforeshow", "#addtask", function () {
+        loadUserList();
+        loadTaskNames();
+        $("#taskname").val("");
+        $("#taskdesc").val("");
+    });
+
+    $(document).on("pagebeforeshow", "#records", function () {
+        loadHerd();
+    });
+
+     $(document).on("pagebeforeshow", "#swineboars", function () {
+        loadBoars();
+    });
+
+    $(document).on("pagebeforeshow", "#growthrecord", function () {
+        loadGrowth();
+    });
+
+    $(document).on("pagebeforeshow", "#pighistory", function () {
+        loadHistory();
+    });
+
+    $(document).on("pagebeforeshow", "#expenses", function () {
+        loadExpenses();
+    });
+
+    $(document).on("pagebeforeshow", "#tasknames", function () {
+        loadTaskNames();
+    });
+
+    $(document).on("pagebeforeshow", "#logs", function () {
+        loadLogs();
+    });
+
+    $(document).on("pagebeforeshow", "#sales", function () {
+        loadSales();
+    });
+
+    $(document).on("pagebeforeshow", "#editpig", function () {
+        if (firebase.auth().currentUser.uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") {
+            $("#editpigname").removeAttr("disabled");
+            $("#editpiggender").removeAttr("disabled");
+            $("#editpigbdate").removeAttr("disabled");
+        }else{
+            $("#editpigname").attr("disabled","disabled");
+            $("#editpiggender").attr("disabled","disabled");
+            $("#editpigbdate").attr("disabled","disabled");
+        }
+    });
 
     $("#loginBtn").click(function () {
         $.mobile.loading("show");
@@ -184,20 +233,6 @@ document.addEventListener("deviceready", function () {
         saveLog("User Logout: " + curname);
     });
 
-    $("#addTaskButton").click(function () {
-        $("#tasknames li").addClass("ui-screen-hidden").each(function () {
-            $(this).click(function () {
-                var value = $(this).find("a").attr("data-desc");
-                var ts = $(this).find("a").html();
-                console.log($(this));
-                $("#taskdesc").val(value);
-                $("#taskname").val(ts);
-                $("#tasknames li").addClass("ui-screen-hidden");
-            });
-        });
-
-    });
-
     $(document).on("pagebeforeshow", "#users", function () {
         loadUsers();
     });
@@ -208,51 +243,6 @@ document.addEventListener("deviceready", function () {
         }else{
             loadTasks();
         }
-    });
-
-    $(document).on("pagebeforeshow", "#addtask", function () {
-        loadUserList();
-        loadTaskNames();
-    });
-
-    $(document).on("pagebeforeshow", "#records", function () {
-        loadHerd();
-    });
-
-    $(document).on("pagebeforeshow", "#growthrecord", function () {
-        loadGrowth();
-    });
-
-    $(document).on("pagebeforeshow", "#pighistory", function () {
-        loadHistory();
-    });
-
-    $(document).on("pagebeforeshow", "#expenses", function () {
-        loadExpenses();
-    });
-
-    $(document).on("pagebeforeshow", "#tasknames", function () {
-        loadTaskNames();
-    });
-
-    $(document).on("pagebeforeshow", "#editpig", function () {
-        if (firebase.auth().currentUser.uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") {
-            $("#editpigname").removeAttr("disabled");
-            $("#editpiggender").removeAttr("disabled");
-            $("#editpigbdate").removeAttr("disabled");
-        }else{
-            $("#editpigname").attr("disabled","disabled");
-            $("#editpiggender").attr("disabled","disabled");
-            $("#editpigbdate").attr("disabled","disabled");
-        }
-    });
-
-    $(document).on("pagebeforeshow", "#logs", function () {
-        loadLogs();
-    });
-
-    $(document).on("pagebeforeshow", "#sales", function () {
-        loadSales();
     });
 
     $("#qrgenerated1").on("taphold",function(){
@@ -274,19 +264,19 @@ document.addEventListener("deviceready", function () {
         });
     });
 
-    $("#refreshlogs").click(function(){
-        var xnum = prompt("How many records to show?","50");
-        xnum = parseInt(xnum);
-        if(Number.isInteger(xnum)){
-            var logref = db.ref("logs");
-            $("#loglist").html("");
-            logref.limitToLast(50).on("child_added", function (data) {
-                $("#loglist").prepend("[" + data.val().timestamp + "] - " + data.val().message + "<hr>");
-            });
-        }else{
-            alert("Must provide a valid number");
-        }     
-    });
+    // $("#refreshlogs").click(function(){
+    //     var xnum = prompt("How many records to show?","50");
+    //     xnum = parseInt(xnum);
+    //     if(Number.isInteger(xnum)){
+    //         var logref = db.ref("logs");
+    //         $("#loglist").html("");
+    //         logref.limitToLast(xnum).on("child_added", function (data) {
+    //             $("#loglist").prepend("[" + data.val().timestamp + "] - " + data.val().message + "<hr>");
+    //         });
+    //     }else{
+    //         alert("Must provide a valid number");
+    //     }     
+    // });
 
     $("#addUserButton").click(function () {
         $("#addusername").val("");
@@ -324,10 +314,12 @@ document.addEventListener("deviceready", function () {
         var pname = $("#addpigname").val();
         var pgender = $("#addpiggender").val();
         var pbdate = $("#addpigbdate").val();
+        var pstage = $("#addpigstage").val();
         db.ref("herd").push({
             name: pname,
             gender: pgender,
             birthdate: pbdate,
+            stage: pstage,
             status: "ACTIVE"
         }).then(function () {
             alert("Record saved");
@@ -336,20 +328,57 @@ document.addEventListener("deviceready", function () {
         });
     });
 
+    $("#saveboar").click(function () {
+        var pname = $("#boarname").val();
+        var pgender = $("#boarsow").val();
+        var pbdate = $("#boardate").val();
+        var pstat = $("#boarstat").val();
+        db.ref("swineboars").push({
+            name: pname,
+            gender: pgender,
+            birthdate: pbdate,
+            status: pstat
+        }).then(function () {
+            alert("Record saved");
+            $.mobile.navigate("#swineboars");
+            saveLog("Added new data entry " + pname);
+        });
+    });
+
     $("#pigedit").click(function(){
         var pname = $("#editpigname").val();
         var pgender = $("#editpiggender").val();
         var pbdate = $("#editpigbdate").val();
+        var pstage = $("#editpigstage").val();
         var pkey = $("#editpigkey").val();
-        var herdref = db.ref("herd/" + pkey);
+        var herdref = db.ref("herd/" + pkey)
         herdref.update({
             name:pname,
             gender:pgender,
-            birthdate:pbdate
+            birthdate:pbdate,
+            stage:pstage
         });
         saveLog("Updated data entry " + pname);
         loadHerd();
         $.mobile.navigate("#records");
+    });
+
+    $("#boaredit").click(function(){
+        var pname = $("#editboarname").val();
+        var pgender = $("#editboargender").val();
+        var pbdate = $("#editboardate").val();
+        var pkey = $("#editboarkey").val();
+        var boarstat = $("#editboarstat").val();
+        var herdref = db.ref("swineboars/" + pkey);
+        herdref.update({
+            name:pname,
+            gender:pgender,
+            birthdate:pbdate,
+            status:boarstat
+        });
+        saveLog("Updated data entry " + pname);
+        loadHerd();
+        $.mobile.navigate("#swineboars");
     });
 
     $("#sellpig").click(function(){
@@ -424,6 +453,47 @@ document.addEventListener("deviceready", function () {
                 qr.clear();
                 qr.makeCode(result.text);
                 $.mobile.navigate("#editpig");
+            }            
+            else{
+                alert("Invalid QR Code!");
+            }
+        });
+    });
+
+    $("#qrsearch1").click(function () {
+        cordova.plugins.barcodeScanner.scan(function (result) {
+            var code = result.text;
+            var pigitem = $("#" + code);
+            if(pigitem.length==1){
+                //fetch data
+                var pigkey = pigitem.attr("data-key");
+                var xname = pigitem.find("h4").html();
+                var pgender = pigitem.find("p").find("b").html();
+                var pbdate = pigitem.find("p").find("i").html();
+                var pstat = pigitem.find("p").find("u").html();
+                $("#editboarkey").val(pigkey);
+                $("#editboarname").val(xname);
+                var el = $("#editboargender");
+                el.val(pgender).attr("selected",true).siblings("option").removeAttr("selected");
+                el.selectmenu();
+                el.selectmenu("refresh",true);
+                el = $("#editboarstat");
+                el.val(pstat).attr("selected",true).siblings("option").removeAttr("selected");
+                el.selectmenu();
+                el.selectmenu("refresh",true);
+                $("#editboardate").val(pbdate);
+                $("#qrgenerated2").html("");
+                var qr = new QRCode("qrgenerated2",{
+                    text: "MySwine",
+                    width: 200,
+                    height: 200,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+                qr.clear();
+                qr.makeCode(result.text);
+                $.mobile.navigate("#editboar");
             }            
             else{
                 alert("Invalid QR Code!");
@@ -622,7 +692,18 @@ function loadTaskNames() {
             });
         });
 
+        $("#tasknames li").addClass("ui-screen-hidden").each(function () {
+            $(this).click(function () {
+                var value = $(this).find("a").attr("data-desc");
+                var ts = $(this).find("a").html();
+                $("#taskdesc").val(value);
+                $("#taskname").val(ts);
+                $("#tasknames li").addClass("ui-screen-hidden");
+            });
+        });
+
         try {
+            $("#tasknames").listview("refresh");
             $("#tasklist").listview("refresh");
         } catch (error) {
             
@@ -659,6 +740,7 @@ function loadHerd() {
     var ago;
     var birthdate;
     var status;
+    var stage;
     $("#piglist").html("");
     herdref.orderByChild("name").on("child_added", function (data) {
         key = data.key;
@@ -668,8 +750,10 @@ function loadHerd() {
         ago = moment(birthdate, "YYYY-MM-DD").fromNow();
         ago = ago.substring(0, ago.indexOf("ago"));
         status = data.val().status;
+        stage="NULL";
+        stage = data.val().stage;
         if(status=="ACTIVE"){
-        $("#piglist").append("<li><a href='#editpig' data-key='" + key + "' id='" + key + "'><h4>" + name + "</h4><p>[<b>" + gender + "</b>] " + ago + "[<i>" + birthdate + "</i>]</p></a></li>").listview("refresh");
+        $("#piglist").append("<li><a href='#editpig' data-key='" + key + "' id='" + key + "'>[<u>" + stage + "</u>]<h4>" + name + "</h4><p>[<b>" + gender + "</b>] " + ago + "[<i>" + birthdate + "</i>]</p></a></li>").listview("refresh");
         //attach handler EACH
         $("#piglist li").each(function () {
             $(this).click(function () {
@@ -683,6 +767,12 @@ function loadHerd() {
                 el.val(pgender).attr("selected",true).siblings("option").removeAttr("selected");
                 el.selectmenu();
                 el.selectmenu("refresh",true);
+                if(stage=="NULL"){
+                el = $("#editpigstage");
+                el.val("Farrowing").attr("selected",true).siblings("option").removeAttr("selected");
+                el.selectmenu();
+                el.selectmenu("refresh",true);
+                }
                 $("#editpigbdate").val(pbdate);
                 //QR Generate
                 $("#qrgenerated1").html("");
@@ -699,6 +789,55 @@ function loadHerd() {
             });
         });
         }
+    });
+}
+
+function loadBoars() {
+    var herdref = db.ref("swineboars");
+    var key;
+    var name;
+    var gender;
+    var ago;
+    var birthdate;
+    var status;
+    $("#boarlist").html("");
+    herdref.orderByChild("name").on("child_added", function (data) {
+        key = data.key;
+        name = data.val().name;
+        gender = data.val().gender;
+        birthdate = data.val().birthdate;
+        ago = moment(birthdate, "YYYY-MM-DD").fromNow();
+        ago = ago.substring(0, ago.indexOf("ago"));
+        status = data.val().status;
+        $("#boarlist").append("<li><a href='#editboar' data-key='" + key + "' id='" + key + "'><h4>[<u>" + status + "</u>]" + name + "</h4><p>[<b>" + gender + "</b>] " + ago + "[<i>" + birthdate + "</i>]</p></a></li>").listview("refresh");
+        //attach handler EACH
+        $("#boarlist li").each(function () {
+            $(this).click(function () {
+                var pigkey = $(this).find("a").attr("data-key");
+                var xname = $(this).find("a").find("h4").html();
+                var pgender = $(this).find("a").find("p").find("b").html();
+                var pbdate = $(this).find("a").find("p").find("i").html();
+                $("#editboarkey").val(pigkey);
+                $("#editboarname").val(xname);
+                var el = $("#editboargender");
+                el.val(pgender).attr("selected",true).siblings("option").removeAttr("selected");
+                el.selectmenu();
+                el.selectmenu("refresh",true);
+                $("#editboardate").val(pbdate);
+                //QR Generate
+                $("#qrgenerated2").html("");
+                var qr = new QRCode("qrgenerated2",{
+                    text: "MySwine",
+                    width: 200,
+                    height: 200,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+                qr.clear();
+                qr.makeCode(pigkey);
+            });
+        });
     });
 }
 

@@ -43,7 +43,8 @@
       <span id="currentEmail"></span>
       <div data-role="controlgroup">
         <a href="#tasks" data-transition="flow" class="ui-btn ui-corner-all ui-icon-calendar ui-btn-icon-left">Tasks</a>
-        <a href="#records" data-transition="flow" class="ui-btn ui-corner-all ui-icon-bullets ui-btn-icon-left">Records</a>
+        <a href="#swineboars" data-transition="flow" class="ui-btn ui-corner-all ui-icon-bullets ui-btn-icon-left">Boars and Sows</a>
+        <a href="#records" data-transition="flow" class="ui-btn ui-corner-all ui-icon-bullets ui-btn-icon-left">Piglet Records</a>
         <a href="#sales" data-transition="flow" class="adminonly ui-btn ui-corner-all ui-icon-tag ui-btn-icon-left">Sales</a>
         <a href="#expenses" data-transition="flow" class="adminonly ui-btn ui-corner-all ui-icon-shop ui-btn-icon-left">Expenses</a>
         <a href="#users" data-transition="flow" class="adminonly ui-btn ui-corner-all ui-icon-user ui-btn-icon-left">Users</a>
@@ -90,6 +91,20 @@
         <ul id="finishedTasks" data-role="listview" data-theme="c"></ul>
       </div>
 
+    </div>
+  </div>
+
+  <div data-role="page" id="swineboars" data-theme="b" data-url="swineboars">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#dashboard" data-role="button" data-icon="back"></a>
+      <h1>Sow and Boar Records</h1>
+      <a id="addBoarButton" class="adminonly" data-iconpos="notext" href="#addboar" data-role="button" data-icon="plus"></a>
+      <button id="qrsearch1" data-theme="a">QR Search</button>
+    </div>
+    <div data-role="main" class="ui-content" style="padding-top: 30px;">
+      <ul id="boarlist" data-role="listview" data-filter="true" data-filter-theme="b" data-filter-placeholder="Search..." data-theme="c">
+        <!--<li><a href='#'><h4>P100001</h4><p>[Male] 4-Months</p></a></li>-->
+      </ul>
     </div>
   </div>
 
@@ -224,10 +239,26 @@
     <div data-role="header" data-position="fixed">
       <a data-iconpos="notext" href="#dashboard" data-role="button" data-icon="back"></a>
       <h1>Logs</h1>
-      <a id="refreshlogs" data-iconpos="notext" href="#" data-role="button" data-icon="refresh"></a>
+      <a id="refreshlogs" data-rel="popup" data-position-to="window" data-transition="pop" data-iconpos="notext" href="#refLog" data-role="button" data-icon="refresh"></a>
     </div>
     <div data-role="main" class="ui-content">
         <div id="loglist"></div>
+    </div>
+
+    <div data-role="popup" id="refLog">
+      <div data-role="header">
+        <a data-iconpos="notext" href="#" data-rel="back" data-role="button" data-icon="back"></a>
+        <h1>Filter Logs</h1>
+      </div>
+      <div data-role="main" class="ui-content">
+        <label>Select Start Date: <br>
+          <input type="date" id="logfrom">
+        </label>
+        <label>Select End Date: <br>
+          <input type="date" id="logto">
+        </label>
+        <button id="logFilter">Filter</button>
+      </div>
     </div>
   </div>
 
@@ -280,13 +311,54 @@
       <h1>Add Record</h1>
     </div>
     <div data-role="main" class="ui-content">
+      <label>Pigname: <br>
       <input id="addpigname" type="text" placeholder="Pig Name">
+      </label>
+      <label>Gender<br>
       <select data-theme="c" id="addpiggender">
         <option value="Male">Male</option>
         <option value="Female">Female</option>
       </select>
+      </label>
+      <label>Stage<br>
+      <select data-theme="c" id="addpigstage">
+        <option value="Farrowing">Farrowing</option>
+        <option value="Weaning">Weaning</option>
+        <option value="Finishing">Finishing</option>
+      </select>
+      </label>
+      <label>Birth Date:<br>
       <input id="addpigbdate" type="date">
+      </label>
       <button id="savepig">Save Record</button>
+    </div>
+  </div>
+
+  <div data-role="page" id="addboar" data-theme="b">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#swineboars" data-role="button" data-icon="back"></a>
+      <h1>Add Record</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <label>Name:<br>
+      <input id="boarname" type="text" placeholder="Pig Name">
+      </label>
+      <label>Gender:<br>
+      <select data-theme="c" id="boarsow">
+        <option value="Boar">Boar</option>
+        <option value="Sow">Sow</option>
+      </select>
+      </label>
+      <label>Acquisition Date:<br>
+      <input id="boardate" type="date">
+      </label>
+      <label>Status:<br>
+      <select data-theme="c" id="boarstat">
+        <option value="Ready">Ready</option>
+        <option value="Not Ready">Not Ready</option>
+      </select>
+      </label>
+      <button id="saveboar">Save Record</button>
     </div>
   </div>
 
@@ -298,17 +370,62 @@
     <div data-role="main" class="ui-content">
       <div id="qrgenerated1" style="border:2px solid black; padding:10px; margin:10px; height:200px; width:200px;"></div>
       <input type="hidden" id="editpigkey">
+      <label>Name: <br>
       <input id="editpigname" type="text" placeholder="Pig Name">
+      </label>
+      <label>Gender:<br>
       <select data-theme="c" id="editpiggender">
         <option value="Male">Male</option>
         <option value="Female">Female</option>
       </select>
+      </label>
+      <label>Birthdate:<br>
       <input id="editpigbdate" type="date">
+      </label>
+      <label>Stage<br>
+      <select data-theme="c" id="editpigstage">
+        <option value="Farrowing">Farrowing</option>
+        <option value="Weaning">Weaning</option>
+        <option value="Finishing">Finishing</option>
+      </select>
+      </label>
       <button class="adminonly" id="pigedit">Save Record</button>
       <button id="viewpighistory">Information History</button>
       <button class="adminonly" id="sellpig">Sell</button>
       <button id="growth">Growth Record</button>
       <button class="adminonly" data-theme="d" id="deletepig">Delete Record</button>
+    </div>
+  </div>
+
+  <div data-role="page" id="editboar" data-theme="b">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#swineboars" data-role="button" data-icon="back"></a>
+      <h1>Edit Record</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <div id="qrgenerated2" style="border:2px solid black; padding:10px; margin:10px; height:200px; width:200px;"></div>
+      <input type="hidden" id="editboarkey">
+      <label>Name: <br>
+      <input id="editboarname" type="text" placeholder="Pig Name">
+      </label>
+      <label>Gender:<br>
+      <select data-theme="c" id="editboargender">
+        <option value="Boar">Boar</option>
+        <option value="Sow">Sow</option>
+      </select>
+      </label>
+      <label>Acquisition Date:<br>
+      <input id="editboardate" type="date">
+      </label>
+      <label>Status:<br>
+      <select data-theme="c" id="editboarstat">
+        <option value="Ready">Ready</option>
+        <option value="Not Ready">Not Ready</option>
+      </select>
+      </label>
+      <button class="adminonly" id="boaredit">Save Record</button>
+      <button id="boarhistory">Breeding History</button>
+      <button class="adminonly" data-theme="d" id="deleteboar">Delete Record</button>
     </div>
   </div>
 
@@ -331,6 +448,27 @@
     </div>
   </div>
 
+  <div data-role="page" id="boarhistory" data-theme="b">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#editboar" data-role="button" data-icon="back"></a>
+      <h1>Breeding History</h1>
+      <a data-iconpos="notext" href="#addboarhistory" data-role="button" data-icon="plus"></a>
+    </div>
+    <div data-role="main" class="ui-content">
+      <input type="hidden" id="hisboarkey">
+      <input type="text" disabled id="hisboarname">
+      <input type="text" disabled id="hisboarclass">
+      <table id="hisboartable">
+          <thead>
+            <th>Date</th>
+            <th>Mate</th>
+            <th>Offspring</th>
+          </thead>
+          <tbody></tbody>
+        </table>
+    </div>
+  </div>
+
   <div data-role="page" id="addhistory" data-theme="b">
     <div data-role="header" role="banner" class="ui-header ui-bar-inherit">
       <a data-iconpos="notext" href="#pighistory" data-role="button" data-icon="back"></a>
@@ -338,10 +476,39 @@
     </div>
     <div data-role="main" class="ui-content">
       <input type="hidden" id="historykey">
+      <label>Name: <br>
       <input type="text" disabled id="historyname">
+      </label>
+      <label>Date: <br>
       <input type="date" id="historydate">
+      </label>
+      <label>Description:<br>
       <input type="text" placeholder="Description" id="historydesc">
+      </label>
       <button id="addhistoryrecord">Add Record</button>
+    </div>
+  </div>
+
+  <div data-role="page" id="addboarhistory" data-theme="b">
+    <div data-role="header" role="banner" class="ui-header ui-bar-inherit">
+      <a data-iconpos="notext" href="#boarhistory" data-role="button" data-icon="back"></a>
+      <h1 class="ui-title" role="heading" aria-level="1">Add Breeding History</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <input type="hidden" id="historyboarkey">
+      <label>Name:<br>
+      <input type="text" disabled id="historyboarname">
+      </label>
+      <label>Breeding Date:</label>
+      <input type="date" id="historyboardate">
+      </label>
+      <label>Mate<br>
+      <input type="text" id="historyboarmate">
+      </label>
+      <label>Offspring Count:<br>
+      <input type="number" id="historyboarnum">
+      </label>
+      <button id="addhisboarrec">Add Record</button>
     </div>
   </div>
 
@@ -354,6 +521,7 @@
     <div data-role="main" class="ui-content">
       <input type="hidden" id="growthkey">
       <input type="text" disabled id="growthname">
+      <span id="classA"></span>
       <table id="growthtable" class="highchart" data-graph-container-before="1" data-graph-type="line">
           <thead>
             <th>Date</th>

@@ -43,7 +43,7 @@ document.addEventListener("deviceready", function () {
         $.mobile.loading("hide");
         $("#currentEmail").html(curname);
         $("#curuser").html(curname);
-        saveLog("User Login: " + curname)
+        saveLog("User Login: " + curname);
     }
     });
 
@@ -86,10 +86,16 @@ document.addEventListener("deviceready", function () {
     $(document).on("pagebeforeshow", "#addtask", function () {
         loadUserList();
         loadTaskNames();
+        $("#taskname").val("");
+        $("#taskdesc").val("");
     });
 
     $(document).on("pagebeforeshow", "#records", function () {
         loadHerd();
+    });
+
+     $(document).on("pagebeforeshow", "#swineboars", function () {
+        loadBoars();
     });
 
     $(document).on("pagebeforeshow", "#growthrecord", function () {
@@ -98,6 +104,10 @@ document.addEventListener("deviceready", function () {
 
     $(document).on("pagebeforeshow", "#pighistory", function () {
         loadHistory();
+    });
+
+    $(document).on("pagebeforeshow", "#boarhistory", function () {
+        loadBoarHistory();
     });
 
     $(document).on("pagebeforeshow", "#expenses", function () {
@@ -258,18 +268,18 @@ document.addEventListener("deviceready", function () {
         });
     });
 
-    $("#refreshlogs").click(function(){
-        var xnum = prompt("How many records to show?","50");
-        xnum = parseInt(xnum);
-        if(Number.isInteger(xnum)){
-            var logref = db.ref("logs");
-            $("#loglist").html("");
-            logref.limitToLast(50).on("child_added", function (data) {
+    $("#logFilter").click(function(){
+        var from = new Date($("#logfrom").val() + " 00:00:00");
+        var to = new Date($("#logto").val() + " 23:59:59");
+        var dt;
+        var logref = db.ref("logs");
+        $("#loglist").html("");
+        logref.on("child_added", function (data) {
+            dt = new Date(data.val().timestamp);
+            if(dt>=from && dt<= to){
                 $("#loglist").prepend("[" + data.val().timestamp + "] - " + data.val().message + "<hr>");
-            });
-        }else{
-            alert("Must provide a valid number");
-        }     
+            }
+        });  
     });
 
     $("#addUserButton").click(function () {
@@ -308,10 +318,12 @@ document.addEventListener("deviceready", function () {
         var pname = $("#addpigname").val();
         var pgender = $("#addpiggender").val();
         var pbdate = $("#addpigbdate").val();
+        var pstage = $("#addpigstage").val();
         db.ref("herd").push({
             name: pname,
             gender: pgender,
             birthdate: pbdate,
+            stage: pstage,
             status: "ACTIVE"
         }).then(function () {
             alert("Record saved");
@@ -320,20 +332,57 @@ document.addEventListener("deviceready", function () {
         });
     });
 
+    $("#saveboar").click(function () {
+        var pname = $("#boarname").val();
+        var pgender = $("#boarsow").val();
+        var pbdate = $("#boardate").val();
+        var pstat = $("#boarstat").val();
+        db.ref("swineboars").push({
+            name: pname,
+            gender: pgender,
+            birthdate: pbdate,
+            status: pstat
+        }).then(function () {
+            alert("Record saved");
+            $.mobile.navigate("#swineboars");
+            saveLog("Added new data entry " + pname);
+        });
+    });
+
     $("#pigedit").click(function(){
         var pname = $("#editpigname").val();
         var pgender = $("#editpiggender").val();
         var pbdate = $("#editpigbdate").val();
+        var pstage = $("#editpigstage").val();
         var pkey = $("#editpigkey").val();
-        var herdref = db.ref("herd/" + pkey);
+        var herdref = db.ref("herd/" + pkey)
         herdref.update({
             name:pname,
             gender:pgender,
-            birthdate:pbdate
+            birthdate:pbdate,
+            stage:pstage
         });
         saveLog("Updated data entry " + pname);
         loadHerd();
         $.mobile.navigate("#records");
+    });
+
+    $("#boaredit").click(function(){
+        var pname = $("#editboarname").val();
+        var pgender = $("#editboargender").val();
+        var pbdate = $("#editboardate").val();
+        var pkey = $("#editboarkey").val();
+        var boarstat = $("#editboarstat").val();
+        var herdref = db.ref("swineboars/" + pkey);
+        herdref.update({
+            name:pname,
+            gender:pgender,
+            birthdate:pbdate,
+            status:boarstat
+        });
+        saveLog("Updated data entry " + pname);
+        loadHerd();
+        $.mobile.navigate("#swineboars");
     });
 
     $("#sellpig").click(function(){
@@ -415,6 +464,47 @@ document.addEventListener("deviceready", function () {
         });
     });
 
+    $("#qrsearch1").click(function () {
+        cordova.plugins.barcodeScanner.scan(function (result) {
+            var code = result.text;
+            var pigitem = $("#" + code);
+            if(pigitem.length==1){
+                //fetch data
+                var pigkey = pigitem.attr("data-key");
+                var xname = pigitem.find("h4").html();
+                var pgender = pigitem.find("p").find("b").html();
+                var pbdate = pigitem.find("p").find("i").html();
+                var pstat = pigitem.find("p").find("u").html();
+                $("#editboarkey").val(pigkey);
+                $("#editboarname").val(xname);
+                var el = $("#editboargender");
+                el.val(pgender).attr("selected",true).siblings("option").removeAttr("selected");
+                el.selectmenu();
+                el.selectmenu("refresh",true);
+                el = $("#editboarstat");
+                el.val(pstat).attr("selected",true).siblings("option").removeAttr("selected");
+                el.selectmenu();
+                el.selectmenu("refresh",true);
+                $("#editboardate").val(pbdate);
+                $("#qrgenerated2").html("");
+                var qr = new QRCode("qrgenerated2",{
+                    text: "MySwine",
+                    width: 200,
+                    height: 200,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+                qr.clear();
+                qr.makeCode(result.text);
+                $.mobile.navigate("#editboar");
+            }            
+            else{
+                alert("Invalid QR Code!");
+            }
+        });
+    });
+
     $("#growth").click(function(){
         var pigkey = $("#editpigkey").val();
         $("#growthkey").val(pigkey);
@@ -440,10 +530,20 @@ document.addEventListener("deviceready", function () {
     $("#viewpighistory").click(function(){
         var pigkey = $("#editpigkey").val();
         $("#hiskey").val(pigkey);
-        $("#historykey").val(pigkey);
+        $("#historyboarkey").val(pigkey);
         $("#hisname").val($("#editpigname").val());
         $("#historyname").val($("#editpigname").val());
         $.mobile.navigate("#pighistory");
+    });
+
+    $("#boarhistory").click(function(){
+        var pigkey = $("#editboarkey").val();
+        $("#hisboarkey").val(pigkey);
+        $("#historyboarkey").val(pigkey);
+        $("#hisboarname").val($("#editboarname").val());
+        $("#historyboarname").val($("#editboarname").val());
+        $("#hisboartype").val("");
+        $.mobile.navigate("#boarhistory");
     });
 
     $("#addhistoryrecord").click(function(){
@@ -457,6 +557,23 @@ document.addEventListener("deviceready", function () {
             alert("Information history record saved!");
             loadHistory();
             $.mobile.navigate("#pighistory");
+            $("#historydesc").val("");
+        });
+    });
+
+    $("#addhisboarrec").click(function(){
+        var pigkey = $("#historyboarkey").val();
+        var pigdate = $("#historyboardate").val();
+        var pigmate = $("#historyboarmate").val();
+        var pigoff = $("#historyboarnum").val();
+        var pigref = db.ref("swineboars/" + pigkey + "/history").push({
+            date: pigdate,
+            mate: pigmate,
+            onum: pigoff
+        }).then(function(){
+            alert("Information history record saved!");
+            loadHistory();
+            $.mobile.navigate("#boarhistory");
             $("#historydesc").val("");
         });
     });
@@ -654,6 +771,7 @@ function loadHerd() {
     var ago;
     var birthdate;
     var status;
+    var stage;
     $("#piglist").html("");
     herdref.orderByChild("name").on("child_added", function (data) {
         key = data.key;
@@ -663,8 +781,10 @@ function loadHerd() {
         ago = moment(birthdate, "YYYY-MM-DD").fromNow();
         ago = ago.substring(0, ago.indexOf("ago"));
         status = data.val().status;
+        stage="NULL";
+        stage = data.val().stage;
         if(status=="ACTIVE"){
-        $("#piglist").append("<li><a href='#editpig' data-key='" + key + "' id='" + key + "'><h4>" + name + "</h4><p>[<b>" + gender + "</b>] " + ago + "[<i>" + birthdate + "</i>]</p></a></li>").listview("refresh");
+        $("#piglist").append("<li><a href='#editpig' data-key='" + key + "' id='" + key + "'>[<u>" + stage + "</u>]<h4>" + name + "</h4><p>[<b>" + gender + "</b>] " + ago + "[<i>" + birthdate + "</i>]</p></a></li>").listview("refresh");
         //attach handler EACH
         $("#piglist li").each(function () {
             $(this).click(function () {
@@ -678,6 +798,12 @@ function loadHerd() {
                 el.val(pgender).attr("selected",true).siblings("option").removeAttr("selected");
                 el.selectmenu();
                 el.selectmenu("refresh",true);
+                if(stage=="NULL"){
+                el = $("#editpigstage");
+                el.val("Farrowing").attr("selected",true).siblings("option").removeAttr("selected");
+                el.selectmenu();
+                el.selectmenu("refresh",true);
+                }
                 $("#editpigbdate").val(pbdate);
                 //QR Generate
                 $("#qrgenerated1").html("");
@@ -694,6 +820,55 @@ function loadHerd() {
             });
         });
         }
+    });
+}
+
+function loadBoars() {
+    var herdref = db.ref("swineboars");
+    var key;
+    var name;
+    var gender;
+    var ago;
+    var birthdate;
+    var status;
+    $("#boarlist").html("");
+    herdref.orderByChild("name").on("child_added", function (data) {
+        key = data.key;
+        name = data.val().name;
+        gender = data.val().gender;
+        birthdate = data.val().birthdate;
+        ago = moment(birthdate, "YYYY-MM-DD").fromNow();
+        ago = ago.substring(0, ago.indexOf("ago"));
+        status = data.val().status;
+        $("#boarlist").append("<li><a href='#editboar' data-key='" + key + "' id='" + key + "'>[<u>" + status + "</u>]<h4>" + name + "</h4><p>[<b>" + gender + "</b>] " + ago + "[<i>" + birthdate + "</i>]</p></a></li>").listview("refresh");
+        //attach handler EACH
+        $("#boarlist li").each(function () {
+            $(this).click(function () {
+                var pigkey = $(this).find("a").attr("data-key");
+                var xname = $(this).find("a").find("h4").html();
+                var pgender = $(this).find("a").find("p").find("b").html();
+                var pbdate = $(this).find("a").find("p").find("i").html();
+                $("#editboarkey").val(pigkey);
+                $("#editboarname").val(xname);
+                var el = $("#editboargender");
+                el.val(pgender).attr("selected",true).siblings("option").removeAttr("selected");
+                el.selectmenu();
+                el.selectmenu("refresh",true);
+                $("#editboardate").val(pbdate);
+                //QR Generate
+                $("#qrgenerated2").html("");
+                var qr = new QRCode("qrgenerated2",{
+                    text: "MySwine",
+                    width: 200,
+                    height: 200,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+                qr.clear();
+                qr.makeCode(pigkey);
+            });
+        });
     });
 }
 
@@ -771,8 +946,15 @@ function loadSales(){
     $("#salestable").find("tbody").html("");
     var totalsales=0;
     var salesref = db.ref("sales");
+    var p;
     salesref.orderByChild("transdate").on("child_added", function (data) {
-        $("#salestable").prepend("<tr><td>" + data.val().transdate + "</td><td>" + data.val().name + "</td><td class='num'>" + data.val().price + "</td></tr>");
+        p = data.val().price;
+        if(p>9000){
+            $("#salestable").prepend("<tr><td>" + data.val().transdate + "</td><td>" + data.val().name + "</td><td class='num' style='background:green;'>" + p + "</td></tr>");
+        }
+        else{
+            $("#salestable").prepend("<tr><td>" + data.val().transdate + "</td><td>" + data.val().name + "</td><td class='num'>" + p + "</td></tr>");
+        }
         totalsales = totalsales + parseFloat(data.val().price);
         $("#totalsales").html("Total Sales: " + totalsales);
     });
@@ -784,11 +966,15 @@ function loadGrowth(){
     $('#growthtable').highchartTable();
     var pigkey = $("#growthkey").val();
     var growthref = db.ref("herd/" + pigkey + "/growth");
+    var firstw=0;
     growthref.orderByChild("date").on("child_added", function (data) {
+        if(firstw==0){firstw=data.val().weight}
         $("#growthtable").append("<tr><td>" + data.val().date + "</td><td class='num'>" + data.val().weight + "</td></tr>");
         $(".highcharts-root").parent().remove();
         $('#growthtable').highchartTable();
     });
+    var classAB = parseInt(firstw) >= 1.3 ? "CLASS A" : "CLASS B";
+    $("#classA").html(classAB);
 }
 
 function loadHistory(){
@@ -798,6 +984,25 @@ function loadHistory(){
     historyref.orderByChild("date").on("child_added", function (data) {
         $("#historytable").append("<tr><td>" + data.val().date + "</td><td>" + data.val().desc + "</td></tr>");
     });
+}
+
+function loadBoarHistory(){
+    $("#hisboartable").find("tbody").html("");
+    var pigkey = $("#historyboarkey").val();
+    var historyref = db.ref("swineboars/" + pigkey + "/history");
+    var penalty=0;
+    var onum;
+    historyref.orderByChild("date").on("child_added", function (data) {
+        onum = data.val().onum;
+        if(onum<9){
+            penalty = penalty+1;
+        }
+        $("#hisboartable").append("<tr><td>" + data.val().date + "</td><td>" + data.val().mate + "</td><td>" + data.val().onum + "</td></tr>");
+    });
+    if (penalty >= 4){
+        alert("RFC Alert!\nThis is now recommended for culling");
+        $("#hisboarclass").val("RFC: Recommended For Culling");
+    }
 }
 
 function loadExpenses(){
@@ -854,7 +1059,24 @@ function loadExpenses(){
 }
 
 function changeFormat(datevalue) {
-    return (parseInt(datevalue.getFullYear())) + "-" + (parseInt(datevalue.getMonth())+1) + "-" + datevalue.getDate() + " " + datevalue.getHours() + ":" + datevalue.getMinutes() + ":" + datevalue.getSeconds();
+    var y,m,d,h,n,s;
+    var ymdhns;
+    y = parseInt(datevalue.getFullYear());
+    m = parseInt(datevalue.getMonth())+1;
+    d = datevalue.getDate();
+    h = datevalue.getHours();
+    n = datevalue.getMinutes();
+    s = datevalue.getSeconds();
+
+    //y = (y.toString().length==1 && "0" + y);
+    m = (m.toString().length==1 ? "0" + m : m);
+    d = (d.toString().length==1 ? "0" + d : d);
+    h = (h.toString().length==1 ? "0" + h : h);
+    n = (n.toString().length==1 ? "0" + n : n);
+    s = (s.toString().length==1 ? "0" + s : s);
+
+    ymdhns = y + "-" + m + "-" + d + " " + h + ":" + n + ":" + s;
+    return ymdhns;
 }
 
 function whois(userid) {

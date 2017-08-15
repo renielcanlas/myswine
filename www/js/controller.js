@@ -71,9 +71,11 @@ document.addEventListener("deviceready", function () {
             taskref = db.ref("tasks/" + taskid);
             var timeStamp = new Date();
             var timeString = changeFormat(timeStamp);
+			var rem = prompt("Add remarks to this task");
             taskref.update({
                 finished:timeString,
-                status:"FINISHED"
+                status:"FINISHED",
+				remarks: rem;
             });
             saveLog("Finished Task (" + taskname + ") by " + curname);
             if (firebase.auth().currentUser.uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") {
@@ -688,7 +690,7 @@ function loadTasks() {
             var today = timeString.substring(0, timeString.indexOf(" "));
             var taskday = finished.substring(0,finished.indexOf(" "));
             if(today==taskday){
-                $("#finishedTasks").prepend("<li><a href='#' data-key='" + data.key + "'><h1>" + data.val().task + "</h1><p>" + data.val().finished + "</p></a></li>").listview("refresh");
+                $("#finishedTasks").prepend("<li><a href='#' data-key='" + data.key + "'><h1>" + data.val().task + "</h1><p>" + data.val().finished + "</p><p>" + data.val().remarks + "</p></a></li>").listview("refresh");
                 fin++;
                 $("#finCount").html(fin);
             }

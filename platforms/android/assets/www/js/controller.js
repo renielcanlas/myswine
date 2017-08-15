@@ -31,14 +31,21 @@ document.addEventListener("deviceready", function () {
         fuser = user;
         uid = user.uid;
         $.mobile.navigate("#dashboard");
-        if (uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") {
+        if (uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") { //admin
             $(".adminonly").show();
             curname = "Administrator";
         } else {
-            $(".adminonly").hide();
-            refe.orderByChild("uid").equalTo(uid).on("child_added", function (dat) {
-            curname = dat.val().name;
-        });
+            if(uid=="k8sAyK4pMIQ1DSwq4infnar6nUY2"){
+                $(".adminonly").show();
+                $(".nomgr").hide();
+                curname = "Manager";
+                loadAdminTasks();
+            }else{
+                 $(".adminonly").hide();
+                    refe.orderByChild("uid").equalTo(uid).on("child_added", function (dat) {
+                    curname = dat.val().name;
+                });
+            }
         }
         $.mobile.loading("hide");
         $("#currentEmail").html(curname);
@@ -73,6 +80,30 @@ document.addEventListener("deviceready", function () {
                 loadAdminTasks();
             }else{
                 loadTasks();
+            }
+        }
+    });
+
+    //Swipe Finished Task Item
+    $(document).on("swiperight swipeleft", "#finishedTasks li", function (e) {
+        var taskid = $(this).find("a").attr("data-key");
+        var taskname = $(this).find("a").find("h1").html();
+        var taskref;
+        var uid = firebase.auth().currentUser.uid;
+        var remm;
+        var rem = $(this).find("a").find(".rem").html();
+
+        if (uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52" || uid == "k8sAyK4pMIQ1DSwq4infnar6nUY2") {
+            if(rem!=""){
+                remm = prompt("Add task remarks");
+                taskref = db.ref("tasks/" + taskid);
+                var timeStamp = new Date();
+                var timeString = changeFormat(timeStamp);
+                taskref.update({
+                    remarks: remm
+                });
+                saveLog("Added remarks Task (" + taskname + ") by " + curname);
+                loadAdminTasks();
             }
         }
     });
@@ -242,7 +273,7 @@ document.addEventListener("deviceready", function () {
     });
 
     $(document).on("pagebeforeshow", "#tasks", function () {
-        if (firebase.auth().currentUser.uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") {
+        if (firebase.auth().currentUser.uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52" || firebase.auth().currentUser.uid == "k8sAyK4pMIQ1DSwq4infnar6nUY2") {
             loadAdminTasks();
         }else{
             loadTasks();
@@ -694,8 +725,9 @@ function loadAdminTasks() {
                 var timeString = changeFormat(timeStamp);
                 var today = timeString.substring(0, timeString.indexOf(" "));
                 var taskday = finished.substring(0,finished.indexOf(" "));
+                var remm = data.val().remarks;
                 if(today==taskday){
-                    $("#finishedTasks").prepend("<li><a href='#' data-key='" + data.key + "'><h1>" + data.val().task + "</h1><p>[" + data.val().finished + "]<br>Assigned to:" + assigned + "</p></a></li>").listview("refresh");
+                    $("#finishedTasks").prepend("<li><a href='#' data-key='" + data.key + "'><h1>" + data.val().task + "</h1><p>[" + data.val().finished + "]<br>Assigned to:" + assigned + "</p><p class='rem'>" + remm + "</p></a></li>").listview("refresh");
                     fin++;
                     $("#finCount").html(fin);
                 }

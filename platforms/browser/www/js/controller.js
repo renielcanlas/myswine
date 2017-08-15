@@ -31,19 +31,25 @@ document.addEventListener("deviceready", function () {
         fuser = user;
         uid = user.uid;
         $.mobile.navigate("#dashboard");
-        if (uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") {
+        if (uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") { //admin
             $(".adminonly").show();
             curname = "Administrator";
         } else {
-            $(".adminonly").hide();
-            refe.orderByChild("uid").equalTo(uid).on("child_added", function (dat) {
-            curname = dat.val().name;
-        });
+            if(uid=="k8sAyK4pMIQ1DSwq4infnar6nUY2"){
+                $(".adminonly").show();
+                $(".nomgr").hide();
+                curname = "Manager";
+            }else{
+                 $(".adminonly").hide();
+                    refe.orderByChild("uid").equalTo(uid).on("child_added", function (dat) {
+                    curname = dat.val().name;
+                });
+            }
         }
         $.mobile.loading("hide");
         $("#currentEmail").html(curname);
         $("#curuser").html(curname);
-        saveLog("User Login: " + curname)
+        saveLog("User Login: " + curname);
     }
     });
 
@@ -77,6 +83,30 @@ document.addEventListener("deviceready", function () {
         }
     });
 
+    //Swipe Finished Task Item
+    $(document).on("swiperight swipeleft", "#finishedTasks li", function (e) {
+        var taskid = $(this).find("a").attr("data-key");
+        var taskname = $(this).find("a").find("h1").html();
+        var taskref;
+        var uid = firebase.auth().currentUser.uid;
+        var remm;
+        var rem = $(this).find("a").find(".rem").html();
+
+        if (uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52" || uid == "k8sAyK4pMIQ1DSwq4infnar6nUY2") {
+            if(rem!=""){
+                remm = prompt("Add task remarks");
+                taskref = db.ref("tasks/" + taskid);
+                var timeStamp = new Date();
+                var timeString = changeFormat(timeStamp);
+                taskref.update({
+                    remarks: remm
+                });
+                saveLog("Added remarks Task (" + taskname + ") by " + curname);
+                loadAdminTasks();
+            }
+        }
+    });
+
 
 
     //*********************************//
@@ -104,6 +134,10 @@ document.addEventListener("deviceready", function () {
 
     $(document).on("pagebeforeshow", "#pighistory", function () {
         loadHistory();
+    });
+
+    $(document).on("pagebeforeshow", "#boarhistory", function () {
+        loadBoarHistory();
     });
 
     $(document).on("pagebeforeshow", "#expenses", function () {
@@ -264,19 +298,19 @@ document.addEventListener("deviceready", function () {
         });
     });
 
-    // $("#refreshlogs").click(function(){
-    //     var xnum = prompt("How many records to show?","50");
-    //     xnum = parseInt(xnum);
-    //     if(Number.isInteger(xnum)){
-    //         var logref = db.ref("logs");
-    //         $("#loglist").html("");
-    //         logref.limitToLast(xnum).on("child_added", function (data) {
-    //             $("#loglist").prepend("[" + data.val().timestamp + "] - " + data.val().message + "<hr>");
-    //         });
-    //     }else{
-    //         alert("Must provide a valid number");
-    //     }     
-    // });
+    $("#logFilter").click(function(){
+        var from = new Date($("#logfrom").val() + " 00:00:00");
+        var to = new Date($("#logto").val() + " 23:59:59");
+        var dt;
+        var logref = db.ref("logs");
+        $("#loglist").html("");
+        logref.on("child_added", function (data) {
+            dt = new Date(data.val().timestamp);
+            if(dt>=from && dt<= to){
+                $("#loglist").prepend("[" + data.val().timestamp + "] - " + data.val().message + "<hr>");
+            }
+        });  
+    });
 
     $("#addUserButton").click(function () {
         $("#addusername").val("");
@@ -526,10 +560,20 @@ document.addEventListener("deviceready", function () {
     $("#viewpighistory").click(function(){
         var pigkey = $("#editpigkey").val();
         $("#hiskey").val(pigkey);
-        $("#historykey").val(pigkey);
+        $("#historyboarkey").val(pigkey);
         $("#hisname").val($("#editpigname").val());
         $("#historyname").val($("#editpigname").val());
         $.mobile.navigate("#pighistory");
+    });
+
+    $("#boarhistory").click(function(){
+        var pigkey = $("#editboarkey").val();
+        $("#hisboarkey").val(pigkey);
+        $("#historyboarkey").val(pigkey);
+        $("#hisboarname").val($("#editboarname").val());
+        $("#historyboarname").val($("#editboarname").val());
+        $("#hisboartype").val("");
+        $.mobile.navigate("#boarhistory");
     });
 
     $("#addhistoryrecord").click(function(){
@@ -543,6 +587,23 @@ document.addEventListener("deviceready", function () {
             alert("Information history record saved!");
             loadHistory();
             $.mobile.navigate("#pighistory");
+            $("#historydesc").val("");
+        });
+    });
+
+    $("#addhisboarrec").click(function(){
+        var pigkey = $("#historyboarkey").val();
+        var pigdate = $("#historyboardate").val();
+        var pigmate = $("#historyboarmate").val();
+        var pigoff = $("#historyboarnum").val();
+        var pigref = db.ref("swineboars/" + pigkey + "/history").push({
+            date: pigdate,
+            mate: pigmate,
+            onum: pigoff
+        }).then(function(){
+            alert("Information history record saved!");
+            loadHistory();
+            $.mobile.navigate("#boarhistory");
             $("#historydesc").val("");
         });
     });
@@ -663,8 +724,9 @@ function loadAdminTasks() {
                 var timeString = changeFormat(timeStamp);
                 var today = timeString.substring(0, timeString.indexOf(" "));
                 var taskday = finished.substring(0,finished.indexOf(" "));
+                var remm = data.val().remarks;
                 if(today==taskday){
-                    $("#finishedTasks").prepend("<li><a href='#' data-key='" + data.key + "'><h1>" + data.val().task + "</h1><p>[" + data.val().finished + "]<br>Assigned to:" + assigned + "</p></a></li>").listview("refresh");
+                    $("#finishedTasks").prepend("<li><a href='#' data-key='" + data.key + "'><h1>" + data.val().task + "</h1><p>[" + data.val().finished + "]<br>Assigned to:" + assigned + "</p><p class='rem'>" + remm + "</p></a></li>").listview("refresh");
                     fin++;
                     $("#finCount").html(fin);
                 }
@@ -809,7 +871,7 @@ function loadBoars() {
         ago = moment(birthdate, "YYYY-MM-DD").fromNow();
         ago = ago.substring(0, ago.indexOf("ago"));
         status = data.val().status;
-        $("#boarlist").append("<li><a href='#editboar' data-key='" + key + "' id='" + key + "'><h4>[<u>" + status + "</u>]" + name + "</h4><p>[<b>" + gender + "</b>] " + ago + "[<i>" + birthdate + "</i>]</p></a></li>").listview("refresh");
+        $("#boarlist").append("<li><a href='#editboar' data-key='" + key + "' id='" + key + "'>[<u>" + status + "</u>]<h4>" + name + "</h4><p>[<b>" + gender + "</b>] " + ago + "[<i>" + birthdate + "</i>]</p></a></li>").listview("refresh");
         //attach handler EACH
         $("#boarlist li").each(function () {
             $(this).click(function () {
@@ -915,8 +977,15 @@ function loadSales(){
     $("#salestable").find("tbody").html("");
     var totalsales=0;
     var salesref = db.ref("sales");
+    var p;
     salesref.orderByChild("transdate").on("child_added", function (data) {
-        $("#salestable").prepend("<tr><td>" + data.val().transdate + "</td><td>" + data.val().name + "</td><td class='num'>" + data.val().price + "</td></tr>");
+        p = data.val().price;
+        if(p>9000){
+            $("#salestable").prepend("<tr><td>" + data.val().transdate + "</td><td>" + data.val().name + "</td><td class='num' style='background:green;'>" + p + "</td></tr>");
+        }
+        else{
+            $("#salestable").prepend("<tr><td>" + data.val().transdate + "</td><td>" + data.val().name + "</td><td class='num'>" + p + "</td></tr>");
+        }
         totalsales = totalsales + parseFloat(data.val().price);
         $("#totalsales").html("Total Sales: " + totalsales);
     });
@@ -928,11 +997,15 @@ function loadGrowth(){
     $('#growthtable').highchartTable();
     var pigkey = $("#growthkey").val();
     var growthref = db.ref("herd/" + pigkey + "/growth");
+    var firstw=0;
     growthref.orderByChild("date").on("child_added", function (data) {
+        if(firstw==0){firstw=data.val().weight}
         $("#growthtable").append("<tr><td>" + data.val().date + "</td><td class='num'>" + data.val().weight + "</td></tr>");
         $(".highcharts-root").parent().remove();
         $('#growthtable').highchartTable();
     });
+    var classAB = parseInt(firstw) >= 1.3 ? "CLASS A" : "CLASS B";
+    $("#classA").html(classAB);
 }
 
 function loadHistory(){
@@ -942,6 +1015,25 @@ function loadHistory(){
     historyref.orderByChild("date").on("child_added", function (data) {
         $("#historytable").append("<tr><td>" + data.val().date + "</td><td>" + data.val().desc + "</td></tr>");
     });
+}
+
+function loadBoarHistory(){
+    $("#hisboartable").find("tbody").html("");
+    var pigkey = $("#historyboarkey").val();
+    var historyref = db.ref("swineboars/" + pigkey + "/history");
+    var penalty=0;
+    var onum;
+    historyref.orderByChild("date").on("child_added", function (data) {
+        onum = data.val().onum;
+        if(onum<9){
+            penalty = penalty+1;
+        }
+        $("#hisboartable").append("<tr><td>" + data.val().date + "</td><td>" + data.val().mate + "</td><td>" + data.val().onum + "</td></tr>");
+    });
+    if (penalty >= 4){
+        alert("RFC Alert!\nThis is now recommended for culling");
+        $("#hisboarclass").val("RFC: Recommended For Culling");
+    }
 }
 
 function loadExpenses(){
@@ -998,7 +1090,24 @@ function loadExpenses(){
 }
 
 function changeFormat(datevalue) {
-    return (parseInt(datevalue.getFullYear())) + "-" + (parseInt(datevalue.getMonth())+1) + "-" + datevalue.getDate() + " " + datevalue.getHours() + ":" + datevalue.getMinutes() + ":" + datevalue.getSeconds();
+    var y,m,d,h,n,s;
+    var ymdhns;
+    y = parseInt(datevalue.getFullYear());
+    m = parseInt(datevalue.getMonth())+1;
+    d = datevalue.getDate();
+    h = datevalue.getHours();
+    n = datevalue.getMinutes();
+    s = datevalue.getSeconds();
+
+    //y = (y.toString().length==1 && "0" + y);
+    m = (m.toString().length==1 ? "0" + m : m);
+    d = (d.toString().length==1 ? "0" + d : d);
+    h = (h.toString().length==1 ? "0" + h : h);
+    n = (n.toString().length==1 ? "0" + n : n);
+    s = (s.toString().length==1 ? "0" + s : s);
+
+    ymdhns = y + "-" + m + "-" + d + " " + h + ":" + n + ":" + s;
+    return ymdhns;
 }
 
 function whois(userid) {

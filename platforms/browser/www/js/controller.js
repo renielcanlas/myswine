@@ -39,6 +39,7 @@ document.addEventListener("deviceready", function () {
                 $(".adminonly").show();
                 $(".nomgr").hide();
                 curname = "Manager";
+                loadAdminTasks();
             }else{
                  $(".adminonly").hide();
                     refe.orderByChild("uid").equalTo(uid).on("child_added", function (dat) {
@@ -70,9 +71,11 @@ document.addEventListener("deviceready", function () {
             taskref = db.ref("tasks/" + taskid);
             var timeStamp = new Date();
             var timeString = changeFormat(timeStamp);
+			var rem = prompt("Add remarks to this task");
             taskref.update({
                 finished:timeString,
-                status:"FINISHED"
+                status:"FINISHED",
+				remarks: rem
             });
             saveLog("Finished Task (" + taskname + ") by " + curname);
             if (firebase.auth().currentUser.uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") {
@@ -272,7 +275,7 @@ document.addEventListener("deviceready", function () {
     });
 
     $(document).on("pagebeforeshow", "#tasks", function () {
-        if (firebase.auth().currentUser.uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") {
+        if (firebase.auth().currentUser.uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52" || firebase.auth().currentUser.uid == "k8sAyK4pMIQ1DSwq4infnar6nUY2") {
             loadAdminTasks();
         }else{
             loadTasks();
@@ -687,7 +690,7 @@ function loadTasks() {
             var today = timeString.substring(0, timeString.indexOf(" "));
             var taskday = finished.substring(0,finished.indexOf(" "));
             if(today==taskday){
-                $("#finishedTasks").prepend("<li><a href='#' data-key='" + data.key + "'><h1>" + data.val().task + "</h1><p>" + data.val().finished + "</p></a></li>").listview("refresh");
+                $("#finishedTasks").prepend("<li><a href='#' data-key='" + data.key + "'><h1>" + data.val().task + "</h1><p>" + data.val().finished + "</p><p>" + data.val().remarks + "</p></a></li>").listview("refresh");
                 fin++;
                 $("#finCount").html(fin);
             }

@@ -75,7 +75,7 @@ document.addEventListener("deviceready", function () {
             taskref.update({
                 finished:timeString,
                 status:"FINISHED",
-				remarks: rem;
+				remarks: rem
             });
             saveLog("Finished Task (" + taskname + ") by " + curname);
             if (firebase.auth().currentUser.uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") {

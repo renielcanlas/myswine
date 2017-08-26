@@ -1025,8 +1025,10 @@ function loadBoarHistory(){
     var pigkey = $("#historyboarkey").val();
     var historyref = db.ref("swineboars/" + pigkey + "/history");
     var penalty=0;
+    var hiscount=0;
     var onum;
     historyref.orderByChild("date").on("child_added", function (data) {
+        hiscount++;
         onum = data.val().onum;
         if(onum<9){
             penalty = penalty+1;
@@ -1036,6 +1038,15 @@ function loadBoarHistory(){
     if (penalty >= 4){
         alert("RFC Alert!\nThis is now recommended for culling");
         $("#hisboarclass").val("RFC: Recommended For Culling");
+    }
+    else{
+        if(hiscount>=10){
+            alert("RFC Alert!\nThis is now recommended for culling");
+            $("#hisboarclass").val("RFC: Recommended For Culling");
+        }
+        else{
+            $("#hisboarclass").val("");
+        }
     }
 }
 

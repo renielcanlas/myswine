@@ -71,16 +71,21 @@ document.addEventListener("deviceready", function () {
             taskref = db.ref("tasks/" + taskid);
             var timeStamp = new Date();
             var timeString = changeFormat(timeStamp);
-			var rem = prompt("Add remarks to this task");
-            taskref.update({
-                finished:timeString,
-                status:"FINISHED",
-				remarks: rem
-            });
+			
             saveLog("Finished Task (" + taskname + ") by " + curname);
             if (firebase.auth().currentUser.uid == "OTnpSjeTD7ezIVIZ7e9vmXsHBK52") {
+                var rem = prompt("Add remarks to this task");
+                taskref.update({
+                    finished:timeString,
+                    status:"FINISHED",
+                    remarks: rem
+                });
                 loadAdminTasks();
             }else{
+                taskref.update({
+                    finished:timeString,
+                    status:"FINISHED"
+                });
                 loadTasks();
             }
         }
@@ -121,6 +126,7 @@ document.addEventListener("deviceready", function () {
         loadTaskNames();
         $("#taskname").val("");
         $("#taskdesc").val("");
+        $("#ltasknames li").addClass("ui-screen-hidden");
     });
 
     $(document).on("pagebeforeshow", "#records", function () {
@@ -139,6 +145,10 @@ document.addEventListener("deviceready", function () {
         loadHistory();
     });
 
+    $(document).on("pagebeforeshow", "#boarinfohistory", function () {
+        loadBoarInfoHistory();
+    });
+
     $(document).on("pagebeforeshow", "#boarhistory", function () {
         loadBoarHistory();
     });
@@ -147,8 +157,33 @@ document.addEventListener("deviceready", function () {
         loadExpenses();
     });
 
+    $("#addtasknameonlist").click(function(){
+        loadTaskNames();
+    });
+
     $(document).on("pagebeforeshow", "#tasknames", function () {
         loadTaskNames();
+        loadTaskNames();
+        var tasknameref = db.ref("tasknames");
+        $("#tasklist").html("");
+        console.log(tasknameref);
+        tasknameref.orderByChild("task").on("child_added", function (data) {
+            $("#tasklist").append("<li><a href='#edittaskname' data-key='" + data.key + "'><h4>" + data.val().task + "</h4><p>" + data.val().desc + "</p></a></li>").listview("refresh");
+            
+            $("#tasklist li").each(function () {
+                $(this).click(function () {
+                    var key = $(this).find("a").attr("data-key");
+                    var task = $(this).find("a").find("h4").html();
+                    var desc = $(this).find("a").find("p").html();
+                    $("#edittasknamekey").val(key);
+                    $("#editpushtask").val(task);
+                    $("#editpushdesc").val(desc);
+                });
+            });
+            
+            $("#tasklist").listview("refresh");
+        
+        });
     });
 
     $(document).on("pagebeforeshow", "#logs", function () {
@@ -246,17 +281,21 @@ document.addEventListener("deviceready", function () {
         var ref = db.ref("tasknames");
         var task = $("#pushtask").val();
         var desc = $("#pushdesc").val();
-        ref.push({
-            task: task,
-            desc: desc
-        }).then(function () {
-            console.log("PUSH");
-            $("#pushtask").val("");
-            $("#pushdesc").val("");
-            alert("Record Saved!");
-            $.mobile.navigate("#tasknames");
-            loadTaskNames();
-        });
+        if(task==""){
+            alert("Task Name is required");
+        }else{
+            ref.push({
+                task: task,
+                desc: desc
+            }).then(function () {
+                console.log("PUSH");
+                $("#pushtask").val("");
+                $("#pushdesc").val("");
+                alert("Record Saved!");
+                $.mobile.navigate("#tasknames");
+                loadTaskNames();
+            });
+        }
     });
 
     $("#logout").click(function () {
@@ -286,6 +325,25 @@ document.addEventListener("deviceready", function () {
         var img = $("#qrgenerated1");
         img.height(225);
         img.append($("#editpigkey").val() + "<br>" + $("#editpigname").val());
+        html2canvas(img,{
+            onrendered:function(canvas){
+                window.canvas2ImagePlugin.saveImageDataToLibrary(
+                    function(msg){
+                        alert(msg);
+                    },
+                    function(err){
+                        alert(err);
+                    },
+                    canvas
+                );
+            }
+        });
+    });
+
+    $("#qrgenerated2").on("taphold",function(){
+        var img = $("#qrgenerated2");
+        img.height(225);
+        img.append($("#editboarkey").val() + "<br>" + $("#editboarname").val());
         html2canvas(img,{
             onrendered:function(canvas){
                 window.canvas2ImagePlugin.saveImageDataToLibrary(
@@ -338,7 +396,9 @@ document.addEventListener("deviceready", function () {
                 }).then(function () {
                     loadUsers();
                     saveLog("Created new user: " + xname);
+                    firebase.auth().signInWithEmailAndPassword("admin@myswine.com", "administrator");
                     window.history.back();
+                    firebase.auth().signOut();
                 });
             });
         }
@@ -418,6 +478,16 @@ document.addEventListener("deviceready", function () {
         $.mobile.navigate("#swineboars");
     });
 
+    $("#rfc").click(function(){
+        var pkey = $("#hisboarkey").val();
+        var herdref = db.ref("swineboars/" + pkey);
+        herdref.update({
+            rfc:"rfc"
+        });
+        alert("RFC Alert!\nThis is now recommended for culling");
+        $("#hisboarclass").val("RFC: Recommended For Culling");
+    });
+
     $("#sellpig").click(function(){
         var pkey = $("#editpigkey").val();
         var pname = $("#editpigname").val();
@@ -456,6 +526,18 @@ document.addEventListener("deviceready", function () {
             db.ref("herd/" + pkey).remove().then(function(){
                 alert("Record Deleted!");
                 $.mobile.navigate("#records");
+                saveLog("Deleted data entry " + pname);
+            });
+        }
+    });
+
+    $("#deleteboar").click(function(){
+        var pkey = $("#editboarkey").val();
+        var pname = $("#editboarname").val();
+        if(confirm("Are you sure?")){
+            db.ref("swineboars/" + pkey).remove().then(function(){
+                alert("Record Deleted!");
+                $.mobile.navigate("#swineboars");
                 saveLog("Deleted data entry " + pname);
             });
         }
@@ -569,7 +651,7 @@ document.addEventListener("deviceready", function () {
         $.mobile.navigate("#pighistory");
     });
 
-    $("#boarhistory").click(function(){
+    $("#showboarhistory").click(function(){
         var pigkey = $("#editboarkey").val();
         $("#hisboarkey").val(pigkey);
         $("#historyboarkey").val(pigkey);
@@ -579,8 +661,17 @@ document.addEventListener("deviceready", function () {
         $.mobile.navigate("#boarhistory");
     });
 
+    $("#showboarinfohistory").click(function(){
+        var pigkey = $("#editboarkey").val();
+        $("#hisinfokey").val(pigkey);
+        $("#hisinfoname").val($("#editboarname").val());
+        $("#infohiskey").val(pigkey);
+        $("#infohisname").val($("#editboarname").val());
+        $.mobile.navigate("#boarinfohistory");
+    });
+
     $("#addhistoryrecord").click(function(){
-        var pigkey = $("#historykey").val();
+        var pigkey = $("#hiskey").val();
         var pigdate = $("#historydate").val();
         var pigdesc = $("#historydesc").val();
         var pigref = db.ref("herd/" + pigkey + "/history").push({
@@ -594,6 +685,21 @@ document.addEventListener("deviceready", function () {
         });
     });
 
+    $("#addhisrec").click(function(){
+        var pigkey = $("#infohiskey").val();
+        var pigdate = $("#infohisdate").val();
+        var pigdesc = $("#infohisdesc").val();
+        var pigref = db.ref("swineboars/" + pigkey + "/infohistory").push({
+            date: pigdate,
+            desc: pigdesc
+        }).then(function(){
+            alert("Information history record saved!");
+            loadHistory();
+            $.mobile.navigate("#boarinfohistory");
+            $("#infohisdesc").val("");
+        });
+    });
+
     $("#addhisboarrec").click(function(){
         var pigkey = $("#historyboarkey").val();
         var pigdate = $("#historyboardate").val();
@@ -604,7 +710,7 @@ document.addEventListener("deviceready", function () {
             mate: pigmate,
             onum: pigoff
         }).then(function(){
-            alert("Information history record saved!");
+            alert("Breeding record saved!");
             loadHistory();
             $.mobile.navigate("#boarhistory");
             $("#historydesc").val("");
@@ -740,11 +846,12 @@ function loadAdminTasks() {
 
 function loadTaskNames() {
     var tasknameref = db.ref("tasknames");
-    $("#tasknames").html("");
+    $("#ltasknames").html("");
     $("#tasklist").html("");
+    console.log(tasknameref);
     tasknameref.orderByChild("task").on("child_added", function (data) {
-        $("#tasknames").append("<li><a href='#' data-desc='" + data.val().desc + "'>" + data.val().task + "</a></li>");
-        $("#tasklist").append("<li><a href='#edittaskname' data-key='" + data.key + "'><h4>" + data.val().task + "</h4><p>" + data.val().desc + "</p></a></li>");
+        $("#ltasknames").append("<li><a href='#' data-desc='" + data.val().desc + "'>" + data.val().task + "</a></li>").listview("refresh");
+        $("#tasklist").append("<li><a href='#edittaskname' data-key='" + data.key + "'><h4>" + data.val().task + "</h4><p>" + data.val().desc + "</p></a></li>").listview("refresh");
         
         $("#tasklist li").each(function () {
             $(this).click(function () {
@@ -757,22 +864,19 @@ function loadTaskNames() {
             });
         });
 
-        $("#tasknames li").addClass("ui-screen-hidden").each(function () {
+        $("#ltasknames li").each(function () {
             $(this).click(function () {
                 var value = $(this).find("a").attr("data-desc");
                 var ts = $(this).find("a").html();
                 $("#taskdesc").val(value);
                 $("#taskname").val(ts);
-                $("#tasknames li").addClass("ui-screen-hidden");
+                $("#ltasknames").listview("refresh");
             });
         });
-
-        try {
-            $("#tasknames").listview("refresh");
-            $("#tasklist").listview("refresh");
-        } catch (error) {
-            
-        }
+        
+        $("#tasklist").listview("refresh");
+        $("#ltasknames").listview("refresh");
+       
     });
 }
 
@@ -826,6 +930,7 @@ function loadHerd() {
                 var xname = $(this).find("a").find("h4").html();
                 var pgender = $(this).find("a").find("p").find("b").html();
                 var pbdate = $(this).find("a").find("p").find("i").html();
+                var pstage = $(this).find("a").find("u").html();
                 $("#editpigkey").val(pigkey);
                 $("#editpigname").val(xname);
                 var el = $("#editpiggender");
@@ -833,10 +938,16 @@ function loadHerd() {
                 el.selectmenu();
                 el.selectmenu("refresh",true);
                 if(stage=="NULL"){
-                el = $("#editpigstage");
-                el.val("Farrowing").attr("selected",true).siblings("option").removeAttr("selected");
-                el.selectmenu();
-                el.selectmenu("refresh",true);
+                    el = $("#editpigstage");
+                    el.val("Farrowing").attr("selected",true).siblings("option").removeAttr("selected");
+                    el.selectmenu();
+                    el.selectmenu("refresh",true);
+                }
+                else{
+                    el = $("#editpigstage");
+                    el.val(pstage).attr("selected",true).siblings("option").removeAttr("selected");
+                    el.selectmenu();
+                    el.selectmenu("refresh",true);
                 }
                 $("#editpigbdate").val(pbdate);
                 //QR Generate
@@ -882,10 +993,15 @@ function loadBoars() {
                 var xname = $(this).find("a").find("h4").html();
                 var pgender = $(this).find("a").find("p").find("b").html();
                 var pbdate = $(this).find("a").find("p").find("i").html();
+                var pstat = $(this).find("a").find("u").html();
                 $("#editboarkey").val(pigkey);
                 $("#editboarname").val(xname);
                 var el = $("#editboargender");
                 el.val(pgender).attr("selected",true).siblings("option").removeAttr("selected");
+                el.selectmenu();
+                el.selectmenu("refresh",true);
+                el = $("#editboarstat");
+                el.val(pstat).attr("selected",true).siblings("option").removeAttr("selected");
                 el.selectmenu();
                 el.selectmenu("refresh",true);
                 $("#editboardate").val(pbdate);
@@ -1013,10 +1129,19 @@ function loadGrowth(){
 
 function loadHistory(){
     $("#historytable").find("tbody").html("");
-    var pigkey = $("#historykey").val();
+    var pigkey = $("#hiskey").val();
     var historyref = db.ref("herd/" + pigkey + "/history");
     historyref.orderByChild("date").on("child_added", function (data) {
         $("#historytable").append("<tr><td>" + data.val().date + "</td><td>" + data.val().desc + "</td></tr>");
+    });
+}
+
+function loadBoarInfoHistory(){
+    $("#infohistable").find("tbody").html("");
+    var pigkey = $("#hisinfokey").val();
+    var historyref = db.ref("swineboars/" + pigkey + "/infohistory");
+    historyref.orderByChild("date").on("child_added", function (data) {
+        $("#infohistable").append("<tr><td>" + data.val().date + "</td><td>" + data.val().desc + "</td></tr>");
     });
 }
 
@@ -1036,17 +1161,16 @@ function loadBoarHistory(){
         $("#hisboartable").append("<tr><td>" + data.val().date + "</td><td>" + data.val().mate + "</td><td>" + data.val().onum + "</td></tr>");
     });
     if (penalty >= 4){
-        alert("RFC Alert!\nThis is now recommended for culling");
         $("#hisboarclass").val("RFC: Recommended For Culling");
     }
     else{
         if(hiscount>=10){
-            alert("RFC Alert!\nThis is now recommended for culling");
-            $("#hisboarclass").val("RFC: Recommended For Culling");
+            $("#hisboarclass").val("RFC: Recommended For Culling"); 
         }
-        else{
-            $("#hisboarclass").val("");
-        }
+    }
+
+    if( $("#hisboarclass").val()=="RFC: Recommended For Culling"){
+        alert("RFC Alert!\nThis is now recommended for culling");
     }
 }
 

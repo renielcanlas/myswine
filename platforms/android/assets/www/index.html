@@ -45,9 +45,9 @@
         <a href="#tasks" data-transition="flow" class="ui-btn ui-corner-all ui-icon-calendar ui-btn-icon-left">Tasks</a>
         <a href="#swineboars" data-transition="flow" class="ui-btn ui-corner-all ui-icon-bullets ui-btn-icon-left">Boars and Sows</a>
         <a href="#records" data-transition="flow" class="ui-btn ui-corner-all ui-icon-bullets ui-btn-icon-left">Piglet Records</a>
-        <a href="#sales" data-transition="flow" class="adminonly ui-btn ui-corner-all ui-icon-tag ui-btn-icon-left">Sales</a>
-        <a href="#expenses" data-transition="flow" class="adminonly ui-btn ui-corner-all ui-icon-shop ui-btn-icon-left">Expenses</a>
-        <a href="#users" data-transition="flow" class="adminonly nomgr ui-btn ui-corner-all ui-icon-user ui-btn-icon-left">Users</a>
+        <a href="#sales" data-transition="flow" class="adminonly nomgr ui-btn ui-corner-all ui-icon-tag ui-btn-icon-left">Sales</a>
+        <a href="#expenses" data-transition="flow" class="adminonly nomgr ui-btn ui-corner-all ui-icon-shop ui-btn-icon-left">Expenses</a>
+        <a href="#users" data-transition="flow" class="adminonly ui-btn ui-corner-all ui-icon-user ui-btn-icon-left">Users</a>
         <a href="#logs" data-transition="flow" class="adminonly ui-btn ui-corner-all ui-icon-edit ui-btn-icon-left">Farm Logs</a>
         <a href="#settings" data-transition="flow" class="ui-btn ui-corner-all ui-icon-gear ui-btn-icon-left">Settings</a>
         <a href="#" id="logout" class="ui-btn ui-corner-all ui-icon-lock ui-btn-icon-left">Logout</a>
@@ -129,7 +129,7 @@
     </div>
     <div data-role="main" class="ui-content">
       <h1>MySwine v3.2</h1>
-      <a data-icon="action" href="#tasknames" class="adminonly ui-btn ui-btn-a">Task Names</a>
+      <a data-icon="action" href="#tasknames" id="addtasknameonlist" class="adminonly ui-btn ui-btn-a">Task Names</a>
       <a data-icon="action" href="https://myswine-90d52.firebaseio.com/" target="_blank" class="adminonly ui-btn ui-btn-a">Open Firebase Console</a>
       <a data-icon="info" href="https://drive.google.com/file/d/0B54DGfHc-o0zMjVKQnJpSVRlbUE/view?usp=sharing" target="_blank" class="ui-btn ui-btn-a">Open Users Manual</a>
       <a data-icon="user" href="#developers" class="ui-btn ui-btn-a">Developer's Info</a>
@@ -282,7 +282,7 @@
       <form class="ui-filterable">
         &nbsp;&nbsp;&nbsp;&nbsp;<input id="taskname" data-type="search" placeholder="Task Name">
       </form>
-      <ul data-role="listview" data-filter-reveal="true" id="tasknames" data-filter="true" data-inset="true" data-input="#taskname"></ul>
+      <ul data-role="listview" data-filter-reveal="true" id="ltasknames" data-filter="true" data-inset="true" data-input="#taskname"></ul>
       <input id="taskdesc" data-type="text" placeholder="Task Description">
       <select id="taskassigned" data-theme="c">
         <option value="">Assigned To</option>
@@ -322,9 +322,11 @@
       </label>
       <label>Stage<br>
       <select data-theme="c" id="addpigstage">
+        <option value="Gestation">Gestation</option>
         <option value="Farrowing">Farrowing</option>
         <option value="Weaning">Weaning</option>
-        <option value="Finishing">Finishing</option>
+        <option value="Grower">Grower</option>
+        <option value="Quarantine">Quarantine</option>
       </select>
       </label>
       <label>Birth Date:<br>
@@ -354,8 +356,11 @@
       </label>
       <label>Status:<br>
       <select data-theme="c" id="boarstat">
-        <option value="Ready">Ready</option>
-        <option value="Not Ready">Not Ready</option>
+        <option value="Idle">Idle</option>
+        <option value="Breeding">Breeding</option>
+        <option value="Gestation">Gestation</option>
+        <option value="Farrowing">Farrowing</option>
+        <option value="Quarantine">Quarantine</option>
       </select>
       </label>
       <button id="saveboar">Save Record</button>
@@ -384,9 +389,11 @@
       </label>
       <label>Stage<br>
       <select data-theme="c" id="editpigstage">
+        <option value="Gestation">Gestation</option>
         <option value="Farrowing">Farrowing</option>
         <option value="Weaning">Weaning</option>
-        <option value="Finishing">Finishing</option>
+        <option value="Grower">Grower</option>
+        <option value="Quarantine">Quarantine</option>
       </select>
       </label>
       <button class="adminonly" id="pigedit">Save Record</button>
@@ -419,12 +426,16 @@
       </label>
       <label>Status:<br>
       <select data-theme="c" id="editboarstat">
-        <option value="Ready">Ready</option>
-        <option value="Not Ready">Not Ready</option>
+        <option value="Idle">Idle</option>
+        <option value="Breeding">Breeding</option>
+        <option value="Gestation">Gestation</option>
+        <option value="Farrowing">Farrowing</option>
+        <option value="Quarantine">Quarantine</option>
       </select>
       </label>
       <button class="adminonly" id="boaredit">Save Record</button>
-      <button id="boarhistory">Breeding History</button>
+      <button id="showboarinfohistory">Information History</button>
+      <button id="showboarhistory">Breeding History</button>
       <button class="adminonly" data-theme="d" id="deleteboar">Delete Record</button>
     </div>
   </div>
@@ -448,6 +459,25 @@
     </div>
   </div>
 
+  <div data-role="page" id="boarinfohistory" data-theme="b">
+    <div data-role="header" data-position="fixed">
+      <a data-iconpos="notext" href="#editboar" data-role="button" data-icon="back"></a>
+      <h1>Boar/Swine Information History</h1>
+      <a data-iconpos="notext" href="#addinfohistory" data-role="button" data-icon="plus"></a>
+    </div>
+    <div data-role="main" class="ui-content">
+      <input type="hidden" id="hisinfokey">
+      <input type="text" disabled id="hisinfoname">
+      <table id="infohistable">
+          <thead>
+            <th>Date</th>
+            <th>Description</th>
+          </thead>
+          <tbody></tbody>
+        </table>
+    </div>
+  </div>
+
   <div data-role="page" id="boarhistory" data-theme="b">
     <div data-role="header" data-position="fixed">
       <a data-iconpos="notext" href="#editboar" data-role="button" data-icon="back"></a>
@@ -458,6 +488,7 @@
       <input type="hidden" id="hisboarkey">
       <input type="text" disabled id="hisboarname">
       <input type="text" disabled id="hisboarclass">
+      <button id="rfc">Recommend for Culling</button>
       <table id="hisboartable">
           <thead>
             <th>Date</th>
@@ -466,6 +497,26 @@
           </thead>
           <tbody></tbody>
         </table>
+    </div>
+  </div>
+
+  <div data-role="page" id="addinfohistory" data-theme="b">
+    <div data-role="header" role="banner" class="ui-header ui-bar-inherit">
+      <a data-iconpos="notext" href="#boarinfohistory" data-role="button" data-icon="back"></a>
+      <h1 class="ui-title" role="heading" aria-level="1">Add Information History</h1>
+    </div>
+    <div data-role="main" class="ui-content">
+      <input type="hidden" id="infohiskey">
+      <label>Name: <br>
+      <input type="text" disabled id="infohisname">
+      </label>
+      <label>Date: <br>
+      <input type="date" id="infohisdate">
+      </label>
+      <label>Description:<br>
+      <input type="text" placeholder="Description" id="infohisdesc">
+      </label>
+      <button id="addhisrec">Add Record</button>
     </div>
   </div>
 
@@ -520,7 +571,9 @@
     </div>
     <div data-role="main" class="ui-content">
       <input type="hidden" id="growthkey">
+      <label>Pig Name:<br>
       <input type="text" disabled id="growthname">
+      </label>
       <span id="classA"></span>
       <table id="growthtable" class="highchart" data-graph-container-before="1" data-graph-type="line">
           <thead>
@@ -538,8 +591,11 @@
       <h1>Add Growth Record</h1>
     </div>
     <div data-role="main" class="ui-content">
+      <label>Pig Name:</label>
       <input type="text" disabled id="addgrowthname">
+      <label>Date:</label>
       <input type="date" id="growthdate">
+      <label>Weight</label>
       <input type="number" value="0" step="0.01" id="growthweight">
       <button id="addgrowthrecord">Add Record</button>
     </div>
@@ -601,7 +657,9 @@
       <h1 class="ui-title" role="heading" aria-level="1">Add Expenses</h1>
     </div>
     <div data-role="main" class="ui-content">
+      <label>Date:</label>
       <input type="date" id="expensedate">
+      <label>Category</label>
       <select data-theme="c" id="expensecategory">
         <option value="Foods">Foods</option>
         <option value="Medicines">Medicines/Vaccines</option>
@@ -610,7 +668,9 @@
         <option value="Salaries">Salaries</option>
         <option value="Others">Others</option>
       </select>
+      <label>Description</label>
       <input type="text" id="expensedesc" placeholder="Description" >
+      <label>Amount:</label>
       <input type="number" step="0.01" id="expenseamount">
       <button id="addexpenserecord">Add Record</button>
     </div>

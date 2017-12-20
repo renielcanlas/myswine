@@ -1147,6 +1147,7 @@ function loadBoarInfoHistory(){
 
 function loadBoarHistory(){
     $("#hisboartable").find("tbody").html("");
+    $("#hisboarclass").val("");
     var pigkey = $("#historyboarkey").val();
     var historyref = db.ref("swineboars/" + pigkey + "/history");
     var penalty=0;
